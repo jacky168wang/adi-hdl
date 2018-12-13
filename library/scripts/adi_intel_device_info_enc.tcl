@@ -35,20 +35,27 @@
 
 # adi_intel_device_info_enc.tcl
 
+# The main rule when adding a new parameter is to have the same names for the parameter
+# and it's list (valid range type or supported entity and its encoded value type)
+
 variable auto_set_param_list
 variable fpga_technology_list
 variable fpga_family_list
 variable speed_grade_list
 variable dev_package_list
 variable xcvr_type_list
+variable fpga_voltage_list
 
-# Parameter list for automatic assignament
-set auto_set_param_list { \
+# Parameter list for automatic assignament(generation)
+set auto_gen_param_list { \
           FPGA_TECHNOLOGY \
           FPGA_FAMILY \
           SPEED_GRADE \
-          DEV_PACKAGE \
-          XCVR_TYPE }
+          DEV_PACKAGE}
+
+set auto_set_param_list { \
+          FPGA_VOLTAGE \
+          XCVR_TYPE}
 
 
 # List for automatically assigned parameter values and encoded values
@@ -57,15 +64,13 @@ set fpga_technology_list { \
         { "Cyclone V"  0x10 } \
         { "Cyclone 10" 0x11 } \
         { "Arria 10"   0x12 } \
-        { "Stratix 10" 0x13 } \
-        { "Unknown"    0xff }}
+        { "Stratix 10" 0x13 }}
 
 set fpga_family_list { \
         { SX        0x10 } \
         { GX        0x11 } \
         { GT        0x12 } \
-        { GZ        0x13 } \
-        { "Unknown" 0xff }}
+        { GZ        0x13 }}
 
        #technology 5 generation
        # family Arria SX
@@ -78,14 +83,12 @@ set speed_grade_list { \
         { 5         0x5  } \
         { 6         0x6  } \
         { 7         0x7  } \
-        { 8         0x8  } \
-        { "Unknown" 0xff }}
+        { 8         0x8  }}
 
 set dev_package_list { \
-        { FBGA      0x1  } \
-        { UBGA      0x16 } \
-        { MBGA      0x17 } \
-        { "Unknown" 0xff }}
+        { FBGA      1  } \
+        { UBGA      16 } \
+        { MBGA      17 }}
 
 # FBGA - Fine Pitch Ball Grid Array
 # FBGA - Fine Pitch Ball Grid Array
@@ -94,8 +97,9 @@ set dev_package_list { \
 set xcvr_type_list { \
        { GX        0x0  } \
        { GT        0x1  } \
-       { GXT       0x2  } \
-       { "Unknown" 0xff }}
+       { GXT       0x2  }}
+
+set fpga_voltage_list { 0 20480 } ;# 4.12 format (min 0V max 5V)
 
 ## ***************************************************************************
 ## ***************************************************************************

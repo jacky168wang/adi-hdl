@@ -149,19 +149,23 @@ proc adi_add_auto_fpga_spec_params {} {
       VISIBLE false
     }
 
-    foreach p $auto_set_param_list {
+    foreach p $auto_gen_param_list {
       adi_add_device_spec_param $p
     }
 }
 
+###################################################################################################
+
 proc adi_add_device_spec_param {param} {
 
+    global auto_gen_param_list
     global auto_set_param_list
     global fpga_technology_list
     global fpga_family_list
     global speed_grade_list
     global dev_package_list
     global xcvr_type_list
+    global fpga_voltage_list
 
     set list_pointer [string tolower $param]
     set list_pointer [append list_pointer "_list"]
@@ -178,7 +182,6 @@ proc adi_add_device_spec_param {param} {
     set_parameter_property $param HDL_PARAMETER true
     set_parameter_property $param VISIBLE true
     set_parameter_property $param DERIVED true
-    set_parameter_property $param DEFAULT_VALUE [lindex $enc_list 0 1]
 
     add_parameter ${param}_MANUAL INTEGER
     set_parameter_property ${param}_MANUAL DISPLAY_NAME $param
@@ -197,112 +200,121 @@ proc adi_add_device_spec_param {param} {
     set_parameter_property ${param}_MANUAL ALLOWED_RANGES $ranges
 }
 
+###################################################################################################
+
+proc adi_add_indep_spec_params_overwrite {param} {
+    add_parameter ${param}_USER_OVERWRITE BOOLEAN 0
+    set_parameter_property ${param}_USER_OVERWRITE DISPLAY_NAME "Manually overwrite $param parameter"
+    set_parameter_property ${param}_USER_OVERWRITE HDL_PARAMETER false
+    set_parameter_property ${param}_USER_OVERWRITE GROUP {FPGA info}
+}
+
+###################################################################################################
+
 proc info_param_validate {} {
   source ../scripts/adi_intel_device_info_enc.tcl
   set auto_populate [get_parameter_value AUTO_ASSIGN_PART_INFO]
 
-  if { $auto_populate == true } {
+  set all_ip_param_list [get_parameters]
+  set validate_list ""
+  set independent_overwrite_list ""
+  foreach param $all_ip_param_list {
+    foreach elem [concat $auto_gen_param_list $auto_set_param_list] {
+      if { "$elem" == "$param" } {
+        append validate_list "$param "
+      }
+      if { [regexp ${elem}_USER_OVERWRITE $param] } {
+        append independent_overwrite_list "$elem "
+      }
+    }
+  }
 
+  set indep_overwrite [expr {[llength $independent_overwrite_list] != 0} ? 1 : 0]
+
+  if { $auto_populate == true } {
     set device [get_parameter_value DEVICE]
 
+    # THE ONLY PART OF THE CODE TO EDIT WHEN ADDING A NEW PARAMETER
+    ############################################################################
+    # user and system values (sys_val)
     set fpga_technology [quartus::device::get_part_info -family $device]
     set fpga_family     [quartus::device::get_part_info -family_variant $device]
     set speed_grade     [quartus::device::get_part_info -speed_grade $device]
     set dev_package     [quartus::device::get_part_info -package $device]
-    set xcvr_type       [quartus::device::get_part_info -hssi_speed_grade $device]
+    #set xcvr_type       [quartus::device::get_part_info -hssi_speed_grade $device] ;##### FIX ME
+    set xcvr_type       "GX"							    ;#####
+    set fpga_voltage    [quartus::device::get_part_info -default_voltage $device]
 
-    regsub -all "{" $fpga_technology "" fpga_technology
-    regsub -all "}" $fpga_technology "" fpga_technology
+    # user and system values (sys_val)
+    regsub {V} $fpga_voltage "" fpga_voltage
+    set fpga_voltage [expr int([expr $fpga_voltage * 1000])] ;# // V to mV conversion(integer val)
 
-    regsub "{" $fpga_family "" fpga_family
-    regsub "}" $fpga_family "" fpga_family
+    ############################################################################
 
-    regsub "{" $speed_grade "" speed_grade
-    regsub "}" $speed_grade "" speed_grade
+    # point parameters and assign
+    foreach param $validate_list {
+      set ls_param [string tolower $param]
+      set list_pointer $ls_param
+      append list_pointer "_list"
+      set pointer_to_sys_val [subst $$ls_param]   ;# e.g., $fpga_technology
+      set enc_list_pointer [subst $$list_pointer] ;# e.g., $fpga_technology_list
 
-    regsub "{" $dev_package "" dev_package
-    regsub "}" $dev_package "" dev_package
+      # get_part_info returns '{'#value'}'
+      regsub -all "{" $pointer_to_sys_val "" pointer_to_sys_val
+      regsub -all "}" $pointer_to_sys_val "" pointer_to_sys_val
 
-    # fpga_technology
-    set matched ""
-    foreach i $fpga_technology_list {
-        if { [regexp ^[lindex $i 0] $fpga_technology] } {
-          set matched [lindex $i 1]
-       }
+      # the list defines a range or pairs of values
+      set get_list_correspondence 1
+      if { [llength $enc_list_pointer] != 0 } {
+        if { [llength $enc_list_pointer] == 2 } {
+          if { [llength [lindex $enc_list_pointer 0]] == 1 } {
+            set get_list_correspondence 0
+          }
+        }
+      } else {
+        send_message ERROR "No list $list_pointer defined in adi_intel_device_info_enc.tcl for parameter $param"
+      }
+
+      # auto assign parameter value
+      if { $get_list_correspondence } {
+        set matched ""
+        foreach i $enc_list_pointer {
+            if { [regexp ^[lindex $i 0] $pointer_to_sys_val] } {
+              set matched [lindex $i 1]
+           }
+        }
+        if { $matched == "" } {
+          send_message ERROR "Unknown or undefined(adi_intel_device_info_enc.tcl) $param \"$pointer_to_sys_val\" form \"$device\" device"
+        } else {
+          set_parameter_value $param $matched
+        }
+      } else {
+          set_parameter_value $param $pointer_to_sys_val
+      }
     }
-    if { $matched == "" } {
-      send_message WARNING "Unknown FPGA_TECHNOLOGY \"$fpga_technology\" form \"$device\" device"
-      set_parameter_value FPGA_TECHNOLOGY 0xff
-    } else {
-      set_parameter_value FPGA_TECHNOLOGY $matched
-    }
-
-    # fpga_family
-    set matched ""
-    foreach i $fpga_family_list {
-       if { [regexp ^[lindex $i 0] $fpga_family] } {
-          set matched [lindex $i 1]
-       }
-    }
-    if { $matched == "" } {
-      send_message WARNING "Unknown FPGA_FAMILY(family variant) \"$fpga_family\" form \"$device\" device"
-      set_parameter_value FPGA_FAMILY 0xff
-    } else {
-      set_parameter_value FPGA_FAMILY $matched
-    }
-
-    # speed_grade
-    set matched ""
-    foreach i $speed_grade_list {
-       if { [regexp ^[lindex $i 0] $speed_grade] } {
-          set matched [lindex $i 1]
-       }
-    }
-    if { $matched == "" } {
-      send_message WARNING "Unknown SPEED_GRADE \"$speed_grade\" form \"$device\" device"
-      set_parameter_value SPEED_GRADE 0xff
-    } else {
-      set_parameter_value SPEED_GRADE $matched
-    }
-
-    # dev_package
-    set matched ""
-    foreach i $dev_package_list {
-       if { [regexp ^[lindex $i 0] $dev_package] } {
-          set matched [lindex $i 1]
-       }
-    }
-    if { $matched == "" } {
-      send_message WARNING "Unknown DEV_PACKAGE \"dev_package\" form \"$device\" device"
-      set_parameter_value DEV_PACKAGE 0xff
-    } else {
-      set_parameter_value DEV_PACKAGE $matched
-    }
-
-    # xcvr_type
-    set matched ""
-    foreach i $xcvr_type_list {
-       if { [regexp ^[lindex $i 0] $xcvr_type] } {
-          set matched [lindex $i 1]
-       }
-    }
-    set_parameter_value XCVR_TYPE 1 ;#################### fix me
-
-    # if { $matched == "" } {
-      # send_message WARNING "Unknown XCVR_TYPE \"xcvr_type\" form \"$device\" device"
-      # set_parameter_value XCVR_TYPE 0xff
-    # } else {
-      # set_parameter_value XCVR_TYPE $matched
-    # }
   } else {
-   foreach p $auto_set_param_list {
-     set_parameter_value $p [get_parameter_value ${p}_MANUAL]
-   }
+    foreach p $validate_list {
+      set_parameter_value $p [get_parameter_value ${p}_MANUAL]
+    }
   }
 
-  foreach p $auto_set_param_list {
-   set_parameter_property ${p}_MANUAL VISIBLE [expr $auto_populate ? false : true]
-   set_parameter_property $p VISIBLE $auto_populate
+  # display manual(writable) or auto(non-writable) parametes
+  foreach p $validate_list {
+    set_parameter_property ${p}_MANUAL VISIBLE [expr $auto_populate ? false : true]
+    set_parameter_property $p VISIBLE $auto_populate
+    if { $indep_overwrite == 1 } {
+      foreach p_overwrite $independent_overwrite_list {
+        if { $p == $p_overwrite } {
+          set p_over_val [get_parameter_value ${p}_USER_OVERWRITE]
+          # set the hdl parameter with the independent manual overwritten value
+          if { $p_over_val } {
+            set_parameter_value $p [get_parameter_value ${p}_MANUAL]
+            set_parameter_property ${p}_MANUAL VISIBLE $p_over_val
+            set_parameter_property $p VISIBLE [expr $p_over_val ? false : true]
+          }
+        }
+      }
+    }
   }
 }
 
