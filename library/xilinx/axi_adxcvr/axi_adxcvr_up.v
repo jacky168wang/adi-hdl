@@ -46,6 +46,7 @@ module axi_adxcvr_up #(
   parameter   [ 7:0]  FPGA_FAMILY = 0,
   parameter   [ 7:0]  SPEED_GRADE = 0,
   parameter   [ 7:0]  DEV_PACKAGE = 0,
+  parameter   [15:0]  FPGA_VOLTAGE = 0,
   parameter   integer TX_OR_RX_N = 0,
   parameter   integer QPLL_ENABLE = 1,
   parameter           LPM_OR_DFE_N = 1,
@@ -520,6 +521,7 @@ module axi_adxcvr_up #(
           10'h030: up_rdata_d <= up_tx_diffctrl;
           10'h031: up_rdata_d <= up_tx_postcursor;
           10'h032: up_rdata_d <= up_tx_precursor;
+	  10'h050: up_rdata_d <= {16'd0, FPGA_VOLTAGE};  // mV
           default: up_rdata_d <= 32'd0;
         endcase
       end else begin
