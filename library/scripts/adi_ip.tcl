@@ -1,7 +1,7 @@
 ## ###############################################################################################
 ## ###############################################################################################
 
-source $ad_hdl_dir/library/scripts/adi_device_info_enc.tcl
+source $ad_hdl_dir/library/scripts/adi_xilinx_device_info_enc.tcl
 
 ## check tool version
 
@@ -310,7 +310,7 @@ proc adi_ip_properties {ip_name} {
   ipx::save_core
 }
 
-proc proc adi_add_device_spec_parameters {} {
+proc adi_add_auto_fpga_spec_params {} {
 
   global auto_set_param_list
   set cc [ipx::current_core]
@@ -334,11 +334,19 @@ proc adi_add_device_spec_param {ip_param} {
   # set j 1D list from the original list
   foreach i [subst $$list_pointer] {lappend j [lindex $i 0] [lindex $i 1]}
 
-  # set validation pairs (show x in GUI assign the corresponding y to HDL)
-  set_property -dict [list \
-    "value_validation_type" "pairs" \
-    "value_validation_pairs" $j ] \
-  [ipx::get_user_parameters $ip_param -of_objects $cc]
+  # set ranges or validation pairs (show x in GUI assign the corresponding y to HDL)
+  if { [llength [subst $$list_pointer]] == 2 && [llength $j] == 4} {
+    set_property -dict [list \
+      "value_validation_type" "range" \
+      "value_validation_range_minimum" [lindex [subst $$list_pointer] 0] \
+      "value_validation_range_maximum" [lindex [subst $$list_pointer] 1] ] \
+    [ipx::get_user_parameters $ip_param -of_objects $cc]
+  } else {
+    set_property -dict [list \
+      "value_validation_type" "pairs" \
+      "value_validation_pairs" $j ] \
+    [ipx::get_user_parameters $ip_param -of_objects $cc]
+  }
 
   # FPGA info grup
   set info_group_name "FPGA info"

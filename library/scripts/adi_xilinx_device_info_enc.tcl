@@ -33,7 +33,7 @@
 ## ***************************************************************************
 ## ***************************************************************************
 
-# adi_device_info_enc.tcl
+# adi_xilinx_device_info_enc.tcl
 
 variable auto_set_param_list
 variable fpga_series_list
@@ -114,6 +114,78 @@ set xcvr_type_list { \
         { GTME4_NOT_SUPPORTED 10}}
 
 set fpga_voltage_list {0 5000} ;# 0 to 5000mV
+
+
+## ***************************************************************************
+
+proc adi_device_spec {cellpath param} {
+
+  set list_pointer [string tolower $param]
+  set list_pointer [append list_pointer "_list"]
+
+  upvar 1 $list_pointer $list_pointer
+
+  set ip [get_bd_cells $cellpath]
+  set part [get_property PART [current_project]]
+
+  switch -regexp -- $param {
+      FPGA_TECHNOLOGY {
+          switch  -regexp -- $part {
+             ^xc7    {set series_name 7series}
+             ^xczu   {set series_name ultrascale+}
+             ^xc.u.p {set series_name ultrascale+}
+             ^xc.u   {set series_name ultrascale }
+             default {
+                 puts "Undefined fpga technology for \"$part\"!"
+                 exit -1
+             }
+          }
+          return "$series_name"
+      }
+      FPGA_FAMILY {
+          set fpga_family [get_property FAMILY $part]
+          foreach i $fpga_family_list {
+              regexp ^[lindex $i 0] $fpga_family matched
+          }
+          return "$matched"
+      }
+      SPEED_GRADE {
+          set speed_grade [get_property SPEED $part]
+          return "$speed_grade"
+      }
+      DEV_PACKAGE {
+          set dev_package [get_property PACKAGE $part]
+          foreach i $dev_package_list {
+              regexp ^[lindex $i 0] $dev_package matched
+          }
+          return "$matched"
+      }
+      XCVR_TYPE {
+          set matched ""
+          set dev_transcivers "none"
+          foreach x [list_property $part] {
+              regexp ^GT..._TRANSCEIVERS $x dev_transcivers
+          }
+          foreach i $xcvr_type_list {
+              regexp ^[lindex $i 0] $dev_transcivers matched
+          }
+          if { $matched eq "" } {
+               puts "CRITICAL WARNING: \"$dev_transcivers\" TYPE IS NOT SUPPORTED BY ADI!"
+          }
+          return "$matched"
+      }
+      FPGA_VOLTAGE {
+          set fpga_voltage [get_property REF_OPERATING_VOLTAGE $part]
+	  set fpga_voltage [expr int([expr $fpga_voltage * 1000])] ;# // V to mV conversion(integer val)
+
+          return "$fpga_voltage"
+      }
+      default {
+          puts "WARNING: UNDEFINED PARAMETER \"$param\" (adi_device_spec)!"
+      }
+  }
+}
+
 
 ## ***************************************************************************
 ## ***************************************************************************
