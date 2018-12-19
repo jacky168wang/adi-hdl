@@ -41,7 +41,8 @@ module up_clkgen #(
   parameter [ 7:0]  FPGA_TECHNOLOGY = 0,
   parameter [ 7:0]  FPGA_FAMILY = 0,
   parameter [ 7:0]  SPEED_GRADE = 0,
-  parameter [ 7:0]  DEV_PACKAGE = 0) (
+  parameter [ 7:0]  DEV_PACKAGE = 0,
+  parameter [15:0]  FPGA_VOLTAGE = 0) (
 
   // mmcm reset
 
@@ -171,6 +172,7 @@ module up_clkgen #(
           8'h17: up_rdata <= {31'd0, up_drp_locked};
           8'h1c: up_rdata <= {3'd0, up_drp_rwn, up_drp_addr, up_drp_wdata};
           8'h1d: up_rdata <= {14'd0, up_drp_locked, up_drp_status, up_drp_rdata_hold};
+          8'h50: up_rdata <= {16'd0, FPGA_VOLTAGE}; // mV
           default: up_rdata <= 0;
         endcase
       end else begin
