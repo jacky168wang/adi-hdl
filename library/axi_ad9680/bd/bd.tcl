@@ -36,7 +36,7 @@
 proc init {cellpath otherInfo} {
   set ip [get_bd_cells $cellpath]
 
-  bd::mark_propagate_override $ip " \
+  bd::mark_propagate_only $ip " \
     FPGA_TECHNOLOGY \
     FPGA_FAMILY \
     SPEED_GRADE \

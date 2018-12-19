@@ -38,11 +38,14 @@ proc init {cellpath otherInfo} {
 
   bd::mark_propagate_override $ip \
     "CLKIN_PERIOD \
-     CLKIN2_PERIOD \
-     FPGA_TECHNOLOGY \
+     CLKIN2_PERIOD"
+
+  bd::mark_propagate_only $ip \
+    "FPGA_TECHNOLOGY \
      FPGA_FAMILY \
      SPEED_GRADE \
-     DEV_PACKAGE"
+     DEV_PACKAGE \
+     FPGA_VOLTAGE"
 
   set ip_path [bd::get_vlnv_dir [get_property VLNV $ip]]
   source ${ip_path}../scripts/common_bd.tcl

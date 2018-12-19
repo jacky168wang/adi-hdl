@@ -43,6 +43,7 @@ module axi_clkgen #(
   parameter         FPGA_FAMILY = 0,
   parameter         SPEED_GRADE = 0,
   parameter         DEV_PACKAGE = 0,
+  parameter         FPGA_VOLTAGE = 0,
   parameter         CLKSEL_EN = 0,
   parameter real    CLKIN_PERIOD  = 5.000,
   parameter real    CLKIN2_PERIOD  = 5.000,
@@ -154,7 +155,8 @@ module axi_clkgen #(
     .FPGA_TECHNOLOGY(FPGA_TECHNOLOGY),
     .FPGA_FAMILY(FPGA_FAMILY),
     .SPEED_GRADE(SPEED_GRADE),
-    .DEV_PACKAGE(DEV_PACKAGE)
+    .DEV_PACKAGE(DEV_PACKAGE),
+    .FPGA_VOLTAGE(FPGA_VOLTAGE)
   ) i_up_clkgen (
     .mmcm_rst (mmcm_rst),
     .clk_sel (up_clk_sel_s),
