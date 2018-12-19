@@ -137,12 +137,8 @@ proc ad_ip_parameter {pname ptype pdefault {phdl true} {properties {}}} {
 
 proc adi_add_auto_fpga_spec_params {} {
 
-    source ../scripts/adi_intel_device_info_enc.tcl
-
-    add_parameter AUTO_ASSIGN_PART_INFO BOOLEAN 1
-    set_parameter_property AUTO_ASSIGN_PART_INFO DISPLAY_NAME "Automatically populate FPGA Info Parameters"
-    set_parameter_property AUTO_ASSIGN_PART_INFO HDL_PARAMETER false
-    set_parameter_property AUTO_ASSIGN_PART_INFO GROUP {FPGA info}
+    global ad_hdl_dir
+    source $ad_hdl_dir/library/scripts/adi_intel_device_info_enc.tcl
 
     ad_ip_parameter DEVICE STRING "" false {
       SYSTEM_INFO DEVICE
@@ -167,12 +163,13 @@ proc adi_add_device_spec_param {param} {
     global xcvr_type_list
     global fpga_voltage_list
 
+    set group "FPGA info"
+
     set list_pointer [string tolower $param]
     set list_pointer [append list_pointer "_list"]
 
     set enc_list [subst $$list_pointer]
 
-    set group "FPGA info"
     set ranges ""
 
     add_parameter $param INTEGER
@@ -212,8 +209,18 @@ proc adi_add_indep_spec_params_overwrite {param} {
 ###################################################################################################
 
 proc info_param_validate {} {
-  source ../scripts/adi_intel_device_info_enc.tcl
-  set auto_populate [get_parameter_value AUTO_ASSIGN_PART_INFO]
+  global ad_hdl_dir
+  global fpga_technology
+  global fpga_family
+  global speed_grade
+  global dev_package
+  global xcvr_type
+  global fpga_voltage
+
+  source $ad_hdl_dir/library/scripts/adi_intel_device_info_enc.tcl
+
+  set device [get_parameter_value DEVICE]
+  set auto_populate true ;# for future code dev
 
   set all_ip_param_list [get_parameters]
   set validate_list ""
@@ -232,24 +239,8 @@ proc info_param_validate {} {
   set indep_overwrite [expr {[llength $independent_overwrite_list] != 0} ? 1 : 0]
 
   if { $auto_populate == true } {
-    set device [get_parameter_value DEVICE]
 
-    # THE ONLY PART OF THE CODE TO EDIT WHEN ADDING A NEW PARAMETER
-    ############################################################################
-    # user and system values (sys_val)
-    set fpga_technology [quartus::device::get_part_info -family $device]
-    set fpga_family     [quartus::device::get_part_info -family_variant $device]
-    set speed_grade     [quartus::device::get_part_info -speed_grade $device]
-    set dev_package     [quartus::device::get_part_info -package $device]
-    #set xcvr_type       [quartus::device::get_part_info -hssi_speed_grade $device] ;##### FIX ME
-    set xcvr_type       "GX"							    ;#####
-    set fpga_voltage    [quartus::device::get_part_info -default_voltage $device]
-
-    # user and system values (sys_val)
-    regsub {V} $fpga_voltage "" fpga_voltage
-    set fpga_voltage [expr int([expr $fpga_voltage * 1000])] ;# // V to mV conversion(integer val)
-
-    ############################################################################
+    get_part_param ;# in adi_intel_device_info_enc.tcl
 
     # point parameters and assign
     foreach param $validate_list {
@@ -279,9 +270,9 @@ proc info_param_validate {} {
       if { $get_list_correspondence } {
         set matched ""
         foreach i $enc_list_pointer {
-            if { [regexp ^[lindex $i 0] $pointer_to_sys_val] } {
-              set matched [lindex $i 1]
-           }
+          if { [regexp ^[lindex $i 0] $pointer_to_sys_val] } {
+            set matched [lindex $i 1]
+          }
         }
         if { $matched == "" } {
           send_message ERROR "Unknown or undefined(adi_intel_device_info_enc.tcl) $param \"$pointer_to_sys_val\" form \"$device\" device"
