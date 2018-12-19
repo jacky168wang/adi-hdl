@@ -10,7 +10,7 @@ adi_ip_files axi_clkgen [list \
   "$ad_hdl_dir/library/common/up_axi.v" \
   "$ad_hdl_dir/library/common/up_clkgen.v" \
   "$ad_hdl_dir/library/scripts/common_bd.tcl" \
-  "$ad_hdl_dir/library/scripts/adi_device_info_enc.tcl" \
+  "$ad_hdl_dir/library/scripts/adi_xilinx_device_info_enc.tcl" \
   "bd/bd.tcl" \
   "axi_clkgen.v" ]
 
