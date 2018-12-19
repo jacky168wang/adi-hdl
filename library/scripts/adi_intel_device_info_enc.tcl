@@ -40,11 +40,17 @@
 
 variable auto_set_param_list
 variable fpga_technology_list
+variable fpga_technology
 variable fpga_family_list
+variable fpga_family
 variable speed_grade_list
+variable speed_grade
 variable dev_package_list
+variable dev_package
 variable xcvr_type_list
+variable xcvr_type
 variable fpga_voltage_list
+variable fpga_voltage
 
 # Parameter list for automatic assignament(generation)
 set auto_gen_param_list { \
@@ -61,45 +67,85 @@ set auto_set_param_list { \
 # List for automatically assigned parameter values and encoded values
 # The list name must be the parameter name (lowercase), appending "_list" to it
 set fpga_technology_list { \
-        { "Cyclone V"  0x10 } \
-        { "Cyclone 10" 0x11 } \
-        { "Arria 10"   0x12 } \
-        { "Stratix 10" 0x13 }}
+        { Unknown      0 } \
+        { "Cyclone V"  1 } \
+        { "Cyclone 10" 2 } \
+        { "Arria 10"   3 } \
+        { "Stratix 10" 4 }}
 
 set fpga_family_list { \
-        { SX        0x10 } \
-        { GX        0x11 } \
-        { GT        0x12 } \
-        { GZ        0x13 }}
+        { Unknown   0 } \
+        { SX        1 } \
+        { GX        2 } \
+        { GT        3 } \
+        { GZ        4 }}
 
        #technology 5 generation
        # family Arria SX
 
 set speed_grade_list { \
-        { 1         0x1  } \
-        { 2         0x2  } \
-        { 3         0x3  } \
-        { 4         0x4  } \
-        { 5         0x5  } \
-        { 6         0x6  } \
-        { 7         0x7  } \
-        { 8         0x8  }}
+        { Unknown   0 } \
+        { 1         1 } \
+        { 2         2 } \
+        { 3         3 } \
+        { 4         4 } \
+        { 5         5 } \
+        { 6         6 } \
+        { 7         7 } \
+        { 8         8 }}
 
 set dev_package_list { \
-        { FBGA      1  } \
-        { UBGA      16 } \
-        { MBGA      17 }}
+        { Unknown   0 } \
+        { FBGA      1 } \
+        { UBGA     16 } \
+        { MBGA     17 }}
 
 # FBGA - Fine Pitch Ball Grid Array
 # FBGA - Fine Pitch Ball Grid Array
 
+# transceiver speedgrade
+set xcvr_type_list { 0 9 }
 
-set xcvr_type_list { \
-       { GX        0x0  } \
-       { GT        0x1  } \
-       { GXT       0x2  }}
+set fpga_voltage_list { 0 5000 } ;# min 0mV max 5mV
 
-set fpga_voltage_list { 0 20480 } ;# 4.12 format (min 0V max 5V)
+################################################################################
+
+proc get_part_param {} {
+
+    global fpga_technology
+    global fpga_family
+    global speed_grade
+    global dev_package
+    global xcvr_type
+    global fpga_voltage
+
+    set device [get_parameter_value DEVICE]
+
+    # user and system values (sys_val)
+    if {[catch {set fpga_technology [quartus::device::get_part_info -family $device]} fid]} {
+      set fpga_technology "Unknown"
+    }
+    if {[catch {set fpga_family [quartus::device::get_part_info -family_variant $device]} fid]} {
+      set fpga_family "Unknown"
+    }
+    if {[catch {set speed_grade [quartus::device::get_part_info -speed_grade $device]} fid]} {
+      set speed_grade "Unknown"
+    }
+    if {[catch {set dev_package [quartus::device::get_part_info -package $device]} fid]} {
+      set dev_package "Unknown"
+    }
+    if {[catch {set xcvr_type [quartus::device::get_part_info -hssi_speed_grade $device]} fid]} {
+      set xcvr_type "Unknown"
+    }
+    if {[catch {set fpga_voltage [quartus::device::get_part_info -default_voltage $device]} fid]} {
+      set fpga_voltage "0"
+    }
+
+    # user and system values (sys_val)
+    regsub {V} $fpga_voltage "" fpga_voltage
+    set fpga_voltage [expr int([expr $fpga_voltage * 1000])] ;# // V to mV conversion(integer val)
+
+}
 
 ## ***************************************************************************
 ## ***************************************************************************
