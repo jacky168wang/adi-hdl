@@ -105,9 +105,9 @@ module axi_hdmi_tx #(
   /* 0 = Launch on rising edge, 1 = Launch on falling edge */
 
   localparam  EMBEDDED_SYNC = (INTERFACE == "16_BIT_EMBEDDED_SYNC") ? 1 : 0;
-  localparam  XILINX_7SERIES = 0;
-  localparam  XILINX_ULTRASCALE = 1;
-  localparam  ALTERA_5SERIES = 16;
+  localparam  XILINX_7SERIES = 1;
+  localparam  XILINX_ULTRASCALE = 2;
+  localparam  ALTERA_5SERIES = 101;
 
   // reset and clocks
 
