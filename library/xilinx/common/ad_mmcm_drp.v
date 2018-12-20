@@ -72,9 +72,9 @@ module ad_mmcm_drp #(
   output  reg             up_drp_ready,
   output  reg             up_drp_locked);
 
-  localparam  SEVEN_SERIES = 0;
-  localparam  ULTRASCALE = 1;
-  localparam  ULTRASCALE_PLUS = 2;
+  localparam  SEVEN_SERIES = 1;
+  localparam  ULTRASCALE = 2;
+  localparam  ULTRASCALE_PLUS = 3;
 
 
   // internal registers
