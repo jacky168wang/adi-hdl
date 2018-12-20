@@ -67,11 +67,11 @@ set auto_set_param_list { \
 # List for automatically assigned parameter values and encoded values
 # The list name must be the parameter name (lowercase), appending "_list" to it
 set fpga_technology_list { \
-        { Unknown      0 } \
-        { "Cyclone V"  1 } \
-        { "Cyclone 10" 2 } \
-        { "Arria 10"   3 } \
-        { "Stratix 10" 4 }}
+        { Unknown      100 } \
+        { "Cyclone V"  101 } \
+        { "Cyclone 10" 102 } \
+        { "Arria 10"   103 } \
+        { "Stratix 10" 104 }}
 
 set fpga_family_list { \
         { Unknown   0 } \
