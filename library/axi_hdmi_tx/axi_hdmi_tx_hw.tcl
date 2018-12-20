@@ -11,6 +11,7 @@ set_module_property DESCRIPTION "AXI HDMI Transmit Interface"
 set_module_property VERSION 1.0
 set_module_property GROUP "Analog Devices"
 set_module_property DISPLAY_NAME axi_hdmi_tx
+set_module_property VALIDATION_CALLBACK info_param_validate
 
 # files
 

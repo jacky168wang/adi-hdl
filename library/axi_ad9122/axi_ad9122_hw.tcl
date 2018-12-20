@@ -6,6 +6,7 @@ source ../scripts/adi_env.tcl
 source ../scripts/adi_ip_alt.tcl
 
 ad_ip_create axi_ad9122 {AXI AD9122 Interface}
+set_module_property VALIDATION_CALLBACK info_param_validate
 
 ad_ip_files axi_ad9122 [list \
     $ad_hdl_dir/library/common/ad_dds_cordic_pipe.v \

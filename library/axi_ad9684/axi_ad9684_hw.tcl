@@ -6,6 +6,8 @@ source ../scripts/adi_env.tcl
 source ../scripts/adi_ip_alt.tcl
 
 ad_ip_create axi_ad9684 {AXI AD9684 Interface} axi_ad9684_elab
+set_module_property VALIDATION_CALLBACK info_param_validate
+
 ad_ip_files axi_ad9684 [list \
     $ad_hdl_dir/library/common/ad_rst.v \
     $ad_hdl_dir/library/common/ad_datafmt.v \

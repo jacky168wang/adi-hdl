@@ -6,6 +6,8 @@ source ../scripts/adi_env.tcl
 source ../scripts/adi_ip_alt.tcl
 
 ad_ip_create axi_ad9361 {AXI AD9361 Interface} axi_ad9361_elab
+set_module_property VALIDATION_CALLBACK info_param_validate
+
 ad_ip_files axi_ad9361 [list\
   $ad_hdl_dir/library/altera/common/ad_mul.v \
   $ad_hdl_dir/library/altera/common/ad_dcfilter.v \
