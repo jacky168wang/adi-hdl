@@ -1,0 +1,134 @@
+# ip
+source ../../scripts/adi_env.tcl                        
+source $ad_hdl_dir/library/scripts/adi_ip.tcl      
+  
+adi_if_define "mac_addr"
+adi_if_ports output  32 dest_addr_l
+adi_if_ports output  32 dest_addr_h
+adi_if_ports output  32 sour_addr_l
+adi_if_ports output  32 sour_addr_h
+
+adi_if_define "pusch_ante"
+adi_if_ports output  4 block_used  
+adi_if_ports input   1 rx_rd_en    
+adi_if_ports output 64 rx_data     
+adi_if_ports output  1 rx_valid    
+adi_if_ports output 16 gain_factor 
+adi_if_ports output 16 ante_index
+adi_if_ports output  8 symbol_index
+adi_if_ports output  8 slot_index  
+adi_if_ports output 10 frame_index 
+
+adi_if_define "pdsch_ante"               
+adi_if_ports output  64 data        
+adi_if_ports output   1 sop         
+adi_if_ports output   1 eop   
+adi_if_ports output  16 ante     
+adi_if_ports output   1 valid       
+adi_if_ports output   4 symbol      
+adi_if_ports output   8 slot        
+adi_if_ports output  10 frame       
+
+adi_if_define "avalon_st"                   
+adi_if_ports output  1 sop   
+adi_if_ports output  1 eop  
+adi_if_ports output  1 valid    
+adi_if_ports output  2 empty    
+adi_if_ports output 64 data     
+adi_if_ports input   1 ready    
+
+adi_if_define "sync_ctrl"                   
+adi_if_ports output  1 mode   
+adi_if_ports output  1 trigger  
+adi_if_ports output  1 long_cp    
+adi_if_ports output  4 symbol    
+adi_if_ports output  8 slot        
+adi_if_ports output 10 frame    
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

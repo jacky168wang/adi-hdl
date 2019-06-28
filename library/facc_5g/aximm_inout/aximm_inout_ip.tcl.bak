@@ -1,0 +1,95 @@
+# ip
+
+source ../../scripts/adi_env.tcl
+source $ad_hdl_dir/library/scripts/adi_ip.tcl
+
+adi_ip_create aximm_inout
+adi_ip_files aximm_inout [list \
+  "up_axi.v" \
+  "aximm_inout.sv" \
+]
+
+adi_ip_properties aximm_inout
+
+adi_add_bus "mac_addr" "master" \
+  "analog.com:interface:mac_addr_rtl:1.0" \
+  "analog.com:interface:mac_addr:1.0" \
+  { \
+    { "dest_addr_l" "dest_addr_l" } \
+    { "dest_addr_h" "dest_addr_h" } \
+    { "sour_addr_l" "sour_addr_l" } \
+    { "sour_addr_h" "sour_addr_h" } \
+ }
+
+adi_add_bus "tx_phs_coef" "master" \
+"analog.com:interface:phs_coef_rtl:1.0" \
+"analog.com:interface:phs_coef:1.0" \
+{\
+  {"phs_coef_0" "coef_0"} \
+  {"phs_coef_1" "coef_1"} \
+  {"phs_coef_2" "coef_2"} \
+  {"phs_coef_3" "coef_3"} \
+  {"phs_coef_4" "coef_4"} \
+  {"phs_coef_5" "coef_5"} \
+  {"phs_coef_6" "coef_6"} \
+  {"phs_coef_7" "coef_7"} \
+  {"phs_coef_8" "coef_8"} \
+  {"phs_coef_9" "coef_9"} \
+  {"phs_coef_10" "coef_10"} \
+  {"phs_coef_11" "coef_11"} \
+  {"phs_coef_12" "coef_12"} \
+  {"phs_coef_13" "coef_13"} \
+  {"phs_coef_14" "coef_14"} \
+  {"phs_coef_15" "coef_15"} \
+  {"phs_coef_16" "coef_16"} \
+  {"phs_coef_17" "coef_17"} \
+  {"phs_coef_18" "coef_18"} \
+  {"phs_coef_19" "coef_19"} \
+  {"phs_coef_20" "coef_20"} \
+  {"phs_coef_21" "coef_21"} \
+  {"phs_coef_22" "coef_22"} \
+  {"phs_coef_23" "coef_23"} \
+  {"phs_coef_24" "coef_24"} \
+  {"phs_coef_25" "coef_25"} \
+  {"phs_coef_26" "coef_26"} \
+  {"phs_coef_27" "coef_27"} \
+}
+
+adi_add_bus "rx_phs_coef" "master" \
+"analog.com:interface:phs_coef_rtl:1.0" \
+"analog.com:interface:phs_coef:1.0" \
+{\
+  {"phs_coef_0" "coef_0"} \
+  {"phs_coef_1" "coef_1"} \
+  {"phs_coef_2" "coef_2"} \
+  {"phs_coef_3" "coef_3"} \
+  {"phs_coef_4" "coef_4"} \
+  {"phs_coef_5" "coef_5"} \
+  {"phs_coef_6" "coef_6"} \
+  {"phs_coef_7" "coef_7"} \
+  {"phs_coef_8" "coef_8"} \
+  {"phs_coef_9" "coef_9"} \
+  {"phs_coef_10" "coef_10"} \
+  {"phs_coef_11" "coef_11"} \
+  {"phs_coef_12" "coef_12"} \
+  {"phs_coef_13" "coef_13"} \
+  {"phs_coef_14" "coef_14"} \
+  {"phs_coef_15" "coef_15"} \
+  {"phs_coef_16" "coef_16"} \
+  {"phs_coef_17" "coef_17"} \
+  {"phs_coef_18" "coef_18"} \
+  {"phs_coef_19" "coef_19"} \
+  {"phs_coef_20" "coef_20"} \
+  {"phs_coef_21" "coef_21"} \
+  {"phs_coef_22" "coef_22"} \
+  {"phs_coef_23" "coef_23"} \
+  {"phs_coef_24" "coef_24"} \
+  {"phs_coef_25" "coef_25"} \
+  {"phs_coef_26" "coef_26"} \
+  {"phs_coef_27" "coef_27"} \
+}
+
+ipx::infer_bus_interface dpd_rstn xilinx.com:signal:reset_rtl:1.0 [ipx::current_core]
+ipx::infer_bus_interface dfe_sysrst xilinx.com:signal:reset_rtl:1.0 [ipx::current_core]
+
+ipx::save_core [ipx::current_core]

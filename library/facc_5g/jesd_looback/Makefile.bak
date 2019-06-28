@@ -1,0 +1,14 @@
+####################################################################################
+## Copyright 2018(c) Analog Devices, Inc.
+## Auto-generated, do not modify!
+####################################################################################
+
+LIBRARY_NAME := jesd_mux
+
+XILINX_DEPS += data_32to16.v 
+XILINX_DEPS += jesd_looback.v 
+
+XILINX_DEPS += jesd_looback_ip.tcl
+
+
+include ../../scripts/library.mk
