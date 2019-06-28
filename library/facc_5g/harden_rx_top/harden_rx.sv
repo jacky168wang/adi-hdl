@@ -48,32 +48,32 @@ module harden_rx #(
 
   // connect to harden_sync module
   input         mode   , //1:BBU 0:RRU      
-  (* mark_debug = "true" *)input         trigger,
-  (* mark_debug = "true" *)input         long_cp,
+  input         trigger,
+  input         long_cp,
                  
-  (* mark_debug = "true" *)input  [3:0]  sync_symbol,     
-  (* mark_debug = "true" *)input  [7:0]  sync_slot,  
+  input  [3:0]  sync_symbol,     
+  input  [7:0]  sync_slot,  
   input  [9:0]  sync_frame,                                    
 
   // connect to axi_ad9371 module
-  (* mark_debug = "true" *)input  [15:0] adc_data_0,
-  (* mark_debug = "true" *)input         adc_enable_0,
-  (* mark_debug = "true" *)input  [15:0] adc_data_1,
-  (* mark_debug = "true" *)input         adc_enable_1,
+  input  [15:0] adc_data_0,
+  input         adc_enable_0,
+  input  [15:0] adc_data_1,
+  input         adc_enable_1,
   input  [15:0] adc_data_2,
   input         adc_enable_2,
   input  [15:0] adc_data_3,
   input         adc_enable_3, 
    
    // connect pusch_packet module
-  (* mark_debug = "true" *)input         data_rd_req,  
+  input         data_rd_req,  
   output [63:0] dout_data,
-  (* mark_debug = "true" *)output        dout_valid,
-  (* mark_debug = "true" *)output        dout_sop,
+  output        dout_valid,
+  output        dout_sop,
   output        dout_eop,
-  (* mark_debug = "true" *)output [ 3:0] dout_used, 
-  (* mark_debug = "true" *)output [15:0] dout_ante,  
-  (* mark_debug = "true" *)output [ 7:0] dout_symbol,     
+  output [ 3:0] dout_used, 
+  output [15:0] dout_ante,  
+  output [ 7:0] dout_symbol,     
   output [ 7:0] dout_slot,  
   output [ 9:0] dout_frame, 
   output [15:0] dout_exp,  
@@ -182,36 +182,36 @@ module harden_rx #(
   wire [31:0] arb_out_data ; 
   
   //phase_comps  
-  (* mark_debug = "true" *)wire		    phs_in_valid ;        
-  (* mark_debug = "true" *)wire        phs_in_sop   ;        
+  wire		    phs_in_valid ;        
+  wire        phs_in_sop   ;        
   wire        phs_in_eop   ;        
-  (* mark_debug = "true" *)wire [15:0] phs_in_real  ;        
-  (* mark_debug = "true" *)wire [15:0] phs_in_imag  ;
-  (* mark_debug = "true" *)wire [1:0]  phs_in_ante  ;      
-  (* mark_debug = "true" *)wire [3:0]  phs_in_symbol;       
-  (* mark_debug = "true" *)wire [7:0]  phs_in_slot  ; 
+  wire [15:0] phs_in_real  ;        
+  wire [15:0] phs_in_imag  ;
+  wire [1:0]  phs_in_ante  ;      
+  wire [3:0]  phs_in_symbol;       
+  wire [7:0]  phs_in_slot  ; 
   wire [9:0]  phs_in_frame ;                   
                                     
-  (* mark_debug = "true" *)wire		    phs_out_valid ;       
-  (* mark_debug = "true" *)wire        phs_out_sop   ;       
-  (* mark_debug = "true" *)wire        phs_out_eop   ;       
-  (* mark_debug = "true" *)wire [15:0] phs_out_real  ;       
-  (* mark_debug = "true" *)wire [15:0] phs_out_imag  ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  wire		    phs_out_valid ;       
+  wire        phs_out_sop   ;       
+  wire        phs_out_eop   ;       
+  wire [15:0] phs_out_real  ;       
+  wire [15:0] phs_out_imag  ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
   
   // fft and scaler                    
   wire        fft_in_ready;            
-  (* mark_debug = "true" *)wire        fft_in_valid;            
+  wire        fft_in_valid;            
   wire [15:0] fft_in_real;             
   wire [15:0] fft_in_imag;             
-  (* mark_debug = "true" *)wire        fft_in_sop ;             
+  wire        fft_in_sop ;             
   wire        fft_in_eop ;             
                                        
-  (* mark_debug = "true" *)wire        fft_out_sop;             
+  wire        fft_out_sop;             
   wire        fft_out_eop;             
-  (* mark_debug = "true" *)wire        fft_out_valid;           
-  (* mark_debug = "true" *)wire [15:0] fft_out_real;            
-  (* mark_debug = "true" *)wire [15:0] fft_out_imag;            
-  (* mark_debug = "true" *)wire [5:0]  fft_out_exp;             
+  wire        fft_out_valid;           
+  wire [15:0] fft_out_real;            
+  wire [15:0] fft_out_imag;            
+  wire [5:0]  fft_out_exp;             
   wire [1:0]  fft_error;               
                                        
   wire        sca_in_sop;              
@@ -248,9 +248,9 @@ module harden_rx #(
   
   wire        sd_out_ready;
   wire        sd_out_valid;  
-  (* mark_debug = "true" *)wire [1:0]  sd_out_ante;                           
-  (* mark_debug = "true" *)wire [3:0]  sd_out_symbol;                                                   
-  (* mark_debug = "true" *)wire [7:0]  sd_out_slot;                                                     
+  wire [1:0]  sd_out_ante;                           
+  wire [3:0]  sd_out_symbol;                                                   
+  wire [7:0]  sd_out_slot;                                                     
   wire [9:0]  sd_out_frame; 
   
      

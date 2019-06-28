@@ -71,6 +71,11 @@ proc adi_project_xilinx {project_name {mode 0}} {
     set p_board "xilinx.com:zc706:part0:1.2"
     set sys_zynq 1
   }
+  if [regexp "_mpdfb$" $project_name] {
+    set p_device "xc7z100ffg900-2"
+    set p_board "foxconn.com:mpdfb:part0:1.0"
+    set sys_zynq 1
+  }
   if [regexp "_mitx045$" $project_name] {
     set p_device "xc7z045ffg900-2"
     set p_board "not-applicable"

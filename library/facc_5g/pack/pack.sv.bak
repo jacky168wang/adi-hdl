@@ -6,7 +6,6 @@
 // version 3   time : 2018.09.27 : include timing_packet,2pusch_packet,gmac_packet,pss_packet.
 // version 4   time : 2018.12.17 : merge pusch_packet modules.
 
-
 module  pack #( 
  parameter PACKET_ANTE_NUM = 8'd1,
  parameter SC_NUM = 3276,
@@ -23,13 +22,13 @@ module  pack #(
  input rst_n,  
  
  // connect harden_rx
- (* mark_debug="true" *)input [3:0]  block_used,   
- (* mark_debug="true" *)output       rx_rd_en,                 
- (* mark_debug="true" *)input [63:0] rx_data,  
- (* mark_debug="true" *)input        rx_valid,   
- (* mark_debug="true" *)input [15:0] ante_index,              
+ input [3:0]  block_used,   
+ output       rx_rd_en,                 
+ input [63:0] rx_data,  
+ input        rx_valid,   
+ input [15:0] ante_index,              
  input [15:0] gain_factor,        
- (* mark_debug="true" *)input [ 7:0] symbol_index,        
+ input [ 7:0] symbol_index,        
  input [ 7:0] slot_index,          
  input [15:0] frame_index ,       
 
@@ -47,8 +46,8 @@ module  pack #(
  output				pss_fifo_rdreq,            
                             
  // connect harden_sync            
- (* mark_debug="true" *)input [31:0] sync_din_data,             
- (* mark_debug="true" *)input        irq_1ms,              
+ input [31:0] sync_din_data,             
+ input        irq_1ms,              
  input [15:0] timing_frame_index,   
  input [15:0] timing_slot_index, 
   
@@ -62,12 +61,12 @@ module  pack #(
  input din_erro ,  
                                                
  // avalon_st  connect 10g_eth 
- (* mark_debug="true" *)input  dout_ready,
- (* mark_debug="true" *)output dout_sop,                               
- (* mark_debug="true" *)output dout_eop,                          
- (* mark_debug="true" *)output dout_valid,                        
- (* mark_debug="true" *)output [DATA_WIDTH-1:0] dout_data,    
- (* mark_debug="true" *)output [7:0] dout_keep  
+ input  dout_ready,
+ output dout_sop,                               
+ output dout_eop,                          
+ output dout_valid,                        
+ output [DATA_WIDTH-1:0] dout_data,    
+ output [7:0] dout_keep  
  );  
  
  /***************************************************************/

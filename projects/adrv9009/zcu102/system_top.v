@@ -99,7 +99,10 @@ module system_top (
   inout                   adrv9009_gpio_13,
   inout                   adrv9009_gpio_17,
   inout                   adrv9009_gpio_16,
-  inout                   adrv9009_gpio_18);
+  inout                   adrv9009_gpio_18
+
+
+);
 
   // internal signals
 
@@ -206,6 +209,32 @@ module system_top (
   assign spi_csn_ad9528 =  spi_csn[0];
   assign spi_csn_adrv9009 =  spi_csn[1];
 
+
+ //======================================================================                                                                                                               
+ //                       inside 1pps  generator                                                                                                                                               
+ //======================================================================  
+ 
+    wire       pps_in_inside  ;     
+                                                                                                                  
+  // 1pps                                                                                                                                                                               
+    parameter PPS_CLK_FREQ = 122880000;                                                                                                                                                 
+    reg [26:0] pps_clk_cnt;                                                                                                                                                             
+                                                                                                                                                                                        
+    assign pps_in_inside = pps_clk_cnt >= (PPS_CLK_FREQ / 100) * 99;                                                                                                                           
+                                                                                                                                                                                        
+    always @ ( posedge ref_clk1 ) begin                                                                                                                                                  
+       if (pps_clk_cnt == PPS_CLK_FREQ - 1) begin                                                                                                                                       
+            pps_clk_cnt <= 0;                                                                                                                                                           
+        end                                                                                                                                                                             
+        else begin                                                                                                                                                                        
+            pps_clk_cnt <= pps_clk_cnt + 1'b1;                                                                                                                                            
+        end                                                                                                                                                                               
+    end                                                                                                                                                                                   
+  /*************************************************************/
+
+
+
+
   system_wrapper i_system_wrapper (
     .dac_fifo_bypass (gpio_o[60]),
     .gpio_i (gpio_i),
@@ -243,7 +272,27 @@ module system_top (
     .tx_data_3_p (tx_data_p[3]),
     .tx_ref_clk_0 (ref_clk1),
     .tx_sync_0 (tx_sync),
-    .tx_sysref_0 (sysref));
+    .tx_sysref_0 (sysref),
+    .rfio_ctrl(rfio_ctrl),
+    .calib_enable(calib_enable),  
+    .excalib_enable(excalib_enable),	
+    .rf_gpio_out(gpio_output),  
+  	.gpio_excal_output(gpio_excal_output),
+    .pps_in(pps_in),
+    .xg_refclk_p     ( xg_refclk_p ),
+    .xg_refclk_n     ( xg_refclk_n ),
+    .xg_rxp          ( xg_rxp      ),          
+    .xg_rxn          ( xg_rxn      ),                                                                         
+    .xg_txp          ( xg_txp      ),          
+    .xg_txn          ( xg_txn      ),
+    .xg_reset        ( sys_rst     ),     
+    .xg_tx_disable   ( tx_disable  ),      
+    .xg_signal_detect( 1'b1        ),
+    .xg_tx_fault     ( 1'b0        )
+
+
+
+);
 
 endmodule
 

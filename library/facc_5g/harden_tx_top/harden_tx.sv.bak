@@ -22,7 +22,6 @@
 */
 
 `define FFT_IP_NAME ip_fft_tx
-
 `timescale 1ns/100ps
 
 module harden_tx #(
@@ -58,12 +57,12 @@ module harden_tx #(
 	//connect to dl_distributor module  
   input [63:0] din_data,
   (* mark_debug = "true" *)input        din_sop,   
-  input        din_eop,   
+  (* mark_debug = "true" *)input        din_eop,   
   (* mark_debug = "true" *)input        din_valid,
-  input [15:0] din_ante,
+  (* mark_debug = "true" *)input [15:0] din_ante,
   (* mark_debug = "true" *)input [3:0]  din_symbol,     
-  input [7:0]  din_slot,       
-  input [9:0]  din_frame,                 
+  (* mark_debug = "true" *)input [7:0]  din_slot,       
+  (* mark_debug = "true" *)input [9:0]  din_frame,                 
   
   // connect to axi_ad9371 module
   output [31:0] dac_data_0,
@@ -120,7 +119,7 @@ module harden_tx #(
   wire [3:0]  dac_enable;  
   wire        dc_disable;
   wire        dc_enable;
-  (* mark_debug = "true" *)wire [4:0]  sys_exp;
+  wire [4:0]  sys_exp;
 
   // status report
   wire        map_underflow;
@@ -131,18 +130,18 @@ module harden_tx #(
   reg  [1:0]  fft_error_ev;
   reg  [1:0]  sca_overfl_ev;
   reg  [31:0] transfer_cnt;	  
-  reg  [31:0] underflow0_cnt;
-  reg  [31:0] underflow1_cnt;
+  (* mark_debug = "true" *)reg  [31:0] underflow0_cnt;
+  (* mark_debug = "true" *)reg  [31:0] underflow1_cnt;
 
   // flow control
   wire        map_sync_enable;
-  wire        map_out_enable;
+  (* mark_debug = "true" *)wire        map_out_enable;
   wire        cp0_sync_enable;
   wire        cp1_sync_enable;
-  reg  [3:0]  fft0_used;
-  reg  [3:0]  fft1_used;  
-  wire [4:0]  sum0_used;	  
-  wire [4:0]  sum1_used;	  
+  (* mark_debug = "true" *)reg  [3:0]  fft0_used;
+  (* mark_debug = "true" *)reg  [3:0]  fft1_used;  
+  (* mark_debug = "true" *)wire [4:0]  sum0_used;	  
+  (* mark_debug = "true" *)wire [4:0]  sum1_used;	  
   
   // deglitch
   reg  [3:0]  sync_symbol_cc [3:1];
@@ -150,51 +149,51 @@ module harden_tx #(
   reg  [9:0]  sync_frame_cc  [3:1];
 
   // sc map
-  wire        map_in_valid;
-  wire        map_in_sop;
-  wire        map_in_eop;
+  (* mark_debug = "true" *)wire        map_in_valid;
+  (* mark_debug = "true" *)wire        map_in_sop;
+  (* mark_debug = "true" *)wire        map_in_eop;
   wire [31:0] map_in_real;
   wire [31:0] map_in_imag; 
-  wire [ 1:0] map_in_ante;  
-  wire [ 3:0] map_in_symbol ;      
+  (* mark_debug = "true" *)wire [ 1:0] map_in_ante;  
+  (* mark_debug = "true" *)wire [ 3:0] map_in_symbol ;      
   wire [ 7:0] map_in_slot   ;      
   wire [ 9:0] map_in_frame  ;        
   wire        map_sop_wr_m;
   wire        map_eop_wr_m;       
   wire		    map_dmem_valid;
-  wire        map_out_sop;
-  wire        map_out_eop;
-  wire        map_out_valid;
+  (* mark_debug = "true" *)wire        map_out_sop;
+  (* mark_debug = "true" *)wire        map_out_eop;
+  (* mark_debug = "true" *)wire        map_out_valid;
   wire [7:0]  map_out_real;
   wire [7:0]  map_out_imag; 
   wire        map_full;
   wire        map_empty;
   wire [31:0] map_overflow_cnt;
   wire [ 3:0] map_used;
-  wire [ 1:0] map_out_ante;
-  wire [ 3:0] map_out_symbol;       
+  (* mark_debug = "true" *)wire [ 1:0] map_out_ante;
+  (* mark_debug = "true" *)wire [ 3:0] map_out_symbol;       
   wire [ 7:0] map_out_slot  ;       
   wire [ 9:0] map_out_frame ;  
   wire [31:0] map_timeout_cnt ;       
 
   // decompression
-  wire        dec_out_valid;
-  wire        dec_out_sop;
-  wire        dec_out_eop;
+  (* mark_debug = "true" *)wire        dec_out_valid;
+  (* mark_debug = "true" *)wire        dec_out_sop;
+  (* mark_debug = "true" *)wire        dec_out_eop;
   wire [15:0] dec_out_real;
   wire [15:0] dec_out_imag; 
 
   // fft and scaler
-  wire        fft_in_ready;
+  (* mark_debug = "true" *)wire        fft_in_ready;
   (* mark_debug = "true" *)wire        fft_in_valid;   
   (* mark_debug = "true" *)wire        fft_in_sop;
   (* mark_debug = "true" *)wire        fft_in_eop;
-  (* mark_debug = "true" *)wire [15:0] fft_in_real;
-  (* mark_debug = "true" *)wire [15:0] fft_in_imag;
+  wire [15:0] fft_in_real;
+  wire [15:0] fft_in_imag;
 
   (* mark_debug = "true" *)wire        fft_out_valid;
   (* mark_debug = "true" *)wire [15:0] fft_out_real;
-  (* mark_debug = "true" *)wire [15:0] fft_out_imag;
+  wire [15:0] fft_out_imag;
   (* mark_debug = "true" *)wire [4:0]  fft_out_exp;
   wire [1:0]  fft_error;
   (* mark_debug = "true" *)wire		    fft_out_sop;
@@ -202,28 +201,28 @@ module harden_tx #(
   
   wire [ 4:0] sca_in_exp;
   reg  [31:0] exp_overflow_cnt;
-  (* mark_debug = "true" *)wire        sca_out_valid;
-  (* mark_debug = "true" *)wire [15:0] sca_out_real;
+  wire        sca_out_valid;
+  wire [15:0] sca_out_real;
   wire [15:0] sca_out_imag;
   wire [1:0]  sca_overfl;
-  (* mark_debug = "true" *)wire		     sca_out_sop;
+  wire		     sca_out_sop;
   wire		    sca_out_eop;  
   
   //phase_comps 
-  wire		    phs_in_valid ;
-  wire        phs_in_sop   ;
-  wire        phs_in_eop   ;                                                            
+  (* mark_debug = "true" *)wire		    phs_in_valid ;
+  (* mark_debug = "true" *)wire        phs_in_sop   ;
+  (* mark_debug = "true" *)wire        phs_in_eop   ;                                                            
   wire [15:0] phs_in_real  ;        
   wire [15:0] phs_in_imag  ;  
-  wire [3:0]  phs_in_symbol;       
+  (* mark_debug = "true" *)wire [3:0]  phs_in_symbol;       
   wire [7:0]  phs_in_slot  ;         
-  wire [9:0]  phs_in_ante ;                  
+  (* mark_debug = "true" *)wire [9:0]  phs_in_ante ;                  
                                       
   (* mark_debug = "true" *)wire		    phs_out_valid ;
   (* mark_debug = "true" *)wire        phs_out_sop   ;     
-  wire        phs_out_eop   ;        
-  (* mark_debug = "true" *)wire [15:0] phs_out_real  ;  
-  (* mark_debug = "true" *)wire [15:0] phs_out_imag  ; 
+  (* mark_debug = "true" *)wire        phs_out_eop   ;        
+  wire [15:0] phs_out_real  ;  
+  wire [15:0] phs_out_imag  ; 
   (* mark_debug = "true" *)wire [ 1:0] phs_out_ante  ;
   reg  [ 1:0] phs_in_ante_r[PHS_DELAY-1:0] ;
       
@@ -236,34 +235,34 @@ module harden_tx #(
    
   // cp insertion  
   (* mark_debug = "true" *)wire [3:0]  cp0_used;
-  wire        cp0_full;
-  wire        cp0_wr_eop;
-  wire        cp0_in_eop;
-  wire        cp0_in_valid;
+  (* mark_debug = "true" *)wire        cp0_full;
+  (* mark_debug = "true" *)wire        cp0_wr_eop;
+  (* mark_debug = "true" *)wire        cp0_in_eop;
+  (* mark_debug = "true" *)wire        cp0_in_valid;
   wire [15:0] cp0_in_real;
   wire [15:0] cp0_in_imag;   
-  wire        cp0_mem_valid;
-  wire        cp0_out_sop;
-  wire        cp0_out_eop;
-  wire        cp0_out_valid;
-  wire [31:0] cp0_out_real;
+  (* mark_debug = "true" *)wire        cp0_mem_valid;
+  (* mark_debug = "true" *)wire        cp0_out_sop;
+  (* mark_debug = "true" *)wire        cp0_out_eop;
+  (* mark_debug = "true" *)wire        cp0_out_valid;
+  (* mark_debug = "true" *)wire [31:0] cp0_out_real;
   wire [31:0] cp0_out_imag;
-  wire [31:0] cp0_timeout_cnt ;   
+  (* mark_debug = "true" *)wire [31:0] cp0_timeout_cnt ;   
 	
-  wire [3:0]  cp1_used;
-  wire        cp1_full;
-  wire        cp1_wr_eop;
-  wire        cp1_in_eop;
-  wire        cp1_in_valid;
+  (* mark_debug = "true" *)wire [3:0]  cp1_used;
+  (* mark_debug = "true" *)wire        cp1_full;
+  (* mark_debug = "true" *)wire        cp1_wr_eop;
+  (* mark_debug = "true" *)wire        cp1_in_eop;
+  (* mark_debug = "true" *)wire        cp1_in_valid;
   wire [15:0] cp1_in_real;
   wire [15:0] cp1_in_imag;           
-  wire        cp1_mem_valid;
-  wire        cp1_out_sop;  
-  wire        cp1_out_eop;  
-  wire        cp1_out_valid;
-  wire [31:0] cp1_out_real;
+  (* mark_debug = "true" *)wire        cp1_mem_valid;
+  (* mark_debug = "true" *)wire        cp1_out_sop;  
+  (* mark_debug = "true" *)wire        cp1_out_eop;  
+  (* mark_debug = "true" *)wire        cp1_out_valid;
+  (* mark_debug = "true" *)wire [31:0] cp1_out_real;
   wire [31:0] cp1_out_imag;
-  wire [31:0] cp1_timeout_cnt ;  
+  (* mark_debug = "true" *)wire [31:0] cp1_timeout_cnt ;  
 
   /************************************************/
   /*           outer signal assignment            */

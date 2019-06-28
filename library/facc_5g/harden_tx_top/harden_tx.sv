@@ -47,29 +47,29 @@ module harden_tx #(
   output [31:0] gp_status[STATUS_NUM-1:0],
 	
   // connect to harden_sync module
-  (* mark_debug = "true" *)input         trigger,  
-  (* mark_debug = "true" *)input         long_cp,  
-  (* mark_debug = "true" *)input  [3:0]  sync_symbol,  
-  (* mark_debug = "true" *)input  [7:0]  sync_slot,    
-  (* mark_debug = "true" *)input  [9:0]  sync_frame,        
+  input         trigger,  
+  input         long_cp,  
+  input  [3:0]  sync_symbol,  
+  input  [7:0]  sync_slot,    
+  input  [9:0]  sync_frame,        
 
 ///****************************************
 	//connect to dl_distributor module  
   input [63:0] din_data,
-  (* mark_debug = "true" *)input        din_sop,   
+  input        din_sop,   
   input        din_eop,   
-  (* mark_debug = "true" *)input        din_valid,
+  input        din_valid,
   input [15:0] din_ante,
-  (* mark_debug = "true" *)input [3:0]  din_symbol,     
+  input [3:0]  din_symbol,     
   input [7:0]  din_slot,       
   input [9:0]  din_frame,                 
   
   // connect to axi_ad9371 module
   output [31:0] dac_data_0,
-  (* mark_debug = "true" *)input         dac_enable_0,
+  input         dac_enable_0,
   input         dac_valid_0,
   output [31:0] dac_data_1,
-  (* mark_debug = "true" *)input         dac_enable_1,
+  input         dac_enable_1,
   input         dac_valid_1,
   
   output [31:0] dac_data_2, 
@@ -119,7 +119,7 @@ module harden_tx #(
   wire [3:0]  dac_enable;  
   wire        dc_disable;
   wire        dc_enable;
-  (* mark_debug = "true" *)wire [4:0]  sys_exp;
+  wire [4:0]  sys_exp;
 
   // status report
   wire        map_underflow;
@@ -185,27 +185,27 @@ module harden_tx #(
 
   // fft and scaler
   wire        fft_in_ready;
-  (* mark_debug = "true" *)wire        fft_in_valid;   
-  (* mark_debug = "true" *)wire        fft_in_sop;
-  (* mark_debug = "true" *)wire        fft_in_eop;
-  (* mark_debug = "true" *)wire [15:0] fft_in_real;
-  (* mark_debug = "true" *)wire [15:0] fft_in_imag;
+  wire        fft_in_valid;   
+  wire        fft_in_sop;
+  wire        fft_in_eop;
+  wire [15:0] fft_in_real;
+  wire [15:0] fft_in_imag;
 
-  (* mark_debug = "true" *)wire        fft_out_valid;
-  (* mark_debug = "true" *)wire [15:0] fft_out_real;
-  (* mark_debug = "true" *)wire [15:0] fft_out_imag;
-  (* mark_debug = "true" *)wire [4:0]  fft_out_exp;
+  wire        fft_out_valid;
+  wire [15:0] fft_out_real;
+  wire [15:0] fft_out_imag;
+  wire [4:0]  fft_out_exp;
   wire [1:0]  fft_error;
-  (* mark_debug = "true" *)wire		    fft_out_sop;
-  (* mark_debug = "true" *)wire		    fft_out_eop;   
+  wire		    fft_out_sop;
+  wire		    fft_out_eop;   
   
   wire [ 4:0] sca_in_exp;
   reg  [31:0] exp_overflow_cnt;
-  (* mark_debug = "true" *)wire        sca_out_valid;
-  (* mark_debug = "true" *)wire [15:0] sca_out_real;
+  wire        sca_out_valid;
+  wire [15:0] sca_out_real;
   wire [15:0] sca_out_imag;
   wire [1:0]  sca_overfl;
-  (* mark_debug = "true" *)wire		     sca_out_sop;
+  wire		     sca_out_sop;
   wire		    sca_out_eop;  
   
   //phase_comps 
@@ -218,23 +218,23 @@ module harden_tx #(
   wire [7:0]  phs_in_slot  ;         
   wire [9:0]  phs_in_ante ;                  
                                       
-  (* mark_debug = "true" *)wire		    phs_out_valid ;
-  (* mark_debug = "true" *)wire        phs_out_sop   ;     
+  wire		    phs_out_valid ;
+  wire        phs_out_sop   ;     
   wire        phs_out_eop   ;        
-  (* mark_debug = "true" *)wire [15:0] phs_out_real  ;  
-  (* mark_debug = "true" *)wire [15:0] phs_out_imag  ; 
-  (* mark_debug = "true" *)wire [ 1:0] phs_out_ante  ;
+  wire [15:0] phs_out_real  ;  
+  wire [15:0] phs_out_imag  ; 
+  wire [ 1:0] phs_out_ante  ;
   reg  [ 1:0] phs_in_ante_r[PHS_DELAY-1:0] ;
       
   // sd_forward                         
   wire        sd_out_valid;  
-  (* mark_debug = "true" *)wire [1:0]  sd_out_ante;          
-  (* mark_debug = "true" *)wire [3:0]  sd_out_symbol;           
-  (* mark_debug = "true" *)wire [7:0]  sd_out_slot;             
+  wire [1:0]  sd_out_ante;          
+  wire [3:0]  sd_out_symbol;           
+  wire [7:0]  sd_out_slot;             
   wire [9:0]  sd_out_frame; 
    
   // cp insertion  
-  (* mark_debug = "true" *)wire [3:0]  cp0_used;
+  wire [3:0]  cp0_used;
   wire        cp0_full;
   wire        cp0_wr_eop;
   wire        cp0_in_eop;

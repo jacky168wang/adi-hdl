@@ -147,7 +147,6 @@ module harden_tx_top #(
   wire        ante_sel    ; 
   wire        enable_this ; 
   wire        repeat_cp   ;
-  wire [1:0]  ante_enable ;
      
   wire [3:0]  dac_enable  ; 
   

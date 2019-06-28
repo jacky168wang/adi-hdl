@@ -4,11 +4,12 @@ set dac_fifo_address_width 10
 set dac_data_width 128
 set dac_dma_data_width 128
 
-source $ad_hdl_dir/projects/common/zc706/zc706_system_bd.tcl
+source $ad_hdl_dir/projects/common/mpdfb/mpdfb_system_bd.tcl
 source $ad_hdl_dir/projects/common/xilinx/dacfifo_bd.tcl
 
 ad_ip_parameter sys_ps7 CONFIG.PCW_FPGA2_PERIPHERAL_FREQMHZ 250
 
+ad_mem_hp0_interconnect sys_cpu_clk sys_ps7/S_AXI_HP0
 source ../common/adrv9009_bd.tcl
 source ../common/facc_bd.tcl
 

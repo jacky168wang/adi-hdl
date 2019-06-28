@@ -14,6 +14,7 @@
 
 `timescale 1ns/100ps
 
+
 module harden_tx_top #(
 
   parameter FFT_SIZE    = 4096,                 // FFT size, maximum 8192 in 13 bit offset address
@@ -21,8 +22,8 @@ module harden_tx_top #(
   parameter SC_NUM      = 3276,                 // sc number, maximum 4096 in 12 bit offset address
   parameter CP_LEN1     = 352,                  // cp insertion long cp length
   parameter CP_LEN2     = 288,                  // cp insertion short cp length
-  parameter COEF_NUM    = 28
-
+  parameter COEF_NUM    = 28,                   // phase_comps module coef num     
+  parameter STATUS_NUM  = 8                     // gp_status num                   
   )
   (
   // clk
@@ -33,6 +34,7 @@ module harden_tx_top #(
 
   // gpio
   input  [31:0] gp_control,
+  output [31:0] gp_status[STATUS_NUM-1:0],  
   
   // connect to harden_sync module
   input         trigger,  
@@ -100,7 +102,7 @@ module harden_tx_top #(
   output        m_axis_link_tvalid,       
   input         m_axis_link_tready,  
   
-  input [31:0]  phs_coef[COEF_NUM-1:0],                   
+  input  [31:0] phs_coef[COEF_NUM-1:0],                                  
  
   // simulation                    
   output [31:0] sim_probe_0,       
@@ -145,9 +147,7 @@ module harden_tx_top #(
   wire        dma_looback ;  
   wire        ante_sel    ; 
   wire        enable_this ; 
-  wire        sync_calib  ;
   wire        repeat_cp   ;
-  wire [1:0]  ante_enable ;
      
   wire [3:0]  dac_enable  ; 
   
@@ -292,17 +292,10 @@ module harden_tx_top #(
   assign dma_looback = gp_control[25];  
   assign ante_sel    = gp_control[24];
   assign phs_enable  = gp_control[23];      
-  assign enable_this = gp_control[15];  
-  assign sync_calib  = gp_control[11];                           
-  assign repeat_cp   = gp_control[9];
-  assign ante_enable = gp_control[1:0]; 
+  assign enable_this = gp_control[15];                            
+  assign repeat_cp   = gp_control[9]; 
   
-  // outer bypass  
-  wire eth_enable_in_i0 = enable_in_i0  ;   
-  wire eth_enable_in_q0 = enable_in_q0  ;   
-  wire eth_enable_in_i1 = enable_in_i1  ;   
-  wire eth_enable_in_q1 = enable_in_q1  ;   
-                           
+  // outer bypass                               
   assign dac_enable =  {enable_in_q1, enable_in_i1, enable_in_q0, enable_in_i0}; 
   
   assign enable_out_i0 = enable_in_i0 ;
@@ -366,8 +359,8 @@ module harden_tx_top #(
   
   
   // dma_ctrl        
-  assign fifo_rd_en   = dma_enable  ? (sync_calib | repeat_cp  ? dac_valid : dma_in_enable & dac_valid) : dac_valid;
-  assign dma_in_valid = sync_calib  ? 1'b0 : upack_out_valid;    
+  assign fifo_rd_en   = dma_enable  ? ( repeat_cp  ? dac_valid : dma_in_enable & dac_valid) : dac_valid;
+  assign dma_in_valid = upack_out_valid;    
   assign dma_out_valid = enable_this ? cp0_out_valid | cp1_out_valid : upack_out_valid ;
   /************************************************/
   /*                 flow control                 */
@@ -567,13 +560,15 @@ module harden_tx_top #(
     .SC_NUM  (SC_NUM), 
     .CP_LEN1 (CP_LEN1),
     .CP_LEN2 (CP_LEN2),
-    .COEF_NUM(COEF_NUM)    
+    .COEF_NUM(COEF_NUM),
+    .STATUS_NUM(STATUS_NUM)  
   ) harden_tx_inst (
     .link_clk    (link_clk     ),         
     .eth_clk	   (eth_clk	     ),         
     .fast_clk    (fast_clk     ),         
     .rst_sys_n   (rst_n        ),         
-    .gp_control  (gp_control   ),         
+    .gp_control  (gp_control   ), 
+    .gp_status   (gp_status    ),    
     .trigger     (cp_trigger   ),         
     .long_cp     (long_cp      ),         
     .sync_symbol (sync_symbol  ),         
@@ -610,8 +605,7 @@ module harden_tx_top #(
     .sim_probe_7 (sim_probe_7    ),                     
     .sim_probe_8 (sim_probe_8    ),                     
     .sim_probe_9 (sim_probe_9    ),                     
-    .sim_probe_10(sim_probe_10   ),                    
-    .sim_probe_11(sim_probe_11   )                     
+    .sim_probe_10(sim_probe_10   )                                       
                                      
   );                                  
 

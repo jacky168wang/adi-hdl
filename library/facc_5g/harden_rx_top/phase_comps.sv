@@ -41,10 +41,10 @@ module phase_comps #(
    ) ;   
                     
   //coef_rom         
-  (* mark_debug = "true" *)wire [ 4:0] addr_real ;
+  wire [ 4:0] addr_real ;
   wire [ 4:0] addr_imag ;  
-  (* mark_debug = "true" *)wire [15:0] coef_real ;
-  (* mark_debug = "true" *)wire [15:0] coef_imag ;    
+  wire [15:0] coef_real ;
+  wire [15:0] coef_imag ;    
   
   //sop eop valid 
   reg [MULIT_DELAY-1 :0]din_sop_r;

@@ -79,7 +79,7 @@
  ] [get_bd_pins /xg_ethernet/txusrclk_out]
 
   # Create instance: axis_data_rx_fifo, and set properties
-  set axis_data_rx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:1.1 axis_data_rx_fifo ]
+  set axis_data_rx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 axis_data_rx_fifo ]
   set_property -dict [ list \
    CONFIG.FIFO_DEPTH {8192} \
    CONFIG.HAS_TLAST {1} \
@@ -87,7 +87,7 @@
  ] $axis_data_rx_fifo
 
   # Create instance: axis_data_tx_fifo, and set properties
-  set axis_data_tx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:1.1 axis_data_tx_fifo ]
+  set axis_data_tx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 axis_data_tx_fifo ]
   set_property -dict [ list \
    CONFIG.FIFO_DEPTH {8192} \
    CONFIG.HAS_TLAST {1} \

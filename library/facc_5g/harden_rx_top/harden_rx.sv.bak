@@ -315,7 +315,7 @@ module harden_rx #(
   assign phs_in_ante  = cp0_out_valid ? cp0_out_ante   : cp1_out_ante   ;
   assign phs_in_symbol= cp0_out_valid ? cp0_out_symbol : cp1_out_symbol ;
   assign phs_in_slot  = cp0_out_valid ? cp0_out_slot   : cp1_out_slot   ;
-  assign phs_in_frame =    
+  assign phs_in_frame = cp0_out_valid ? cp0_out_frame  : cp1_out_frame  ;   
   
   // util_fft
   assign fft_in_valid = bypass_phs ? arb_out_valid       : phs_out_valid;        

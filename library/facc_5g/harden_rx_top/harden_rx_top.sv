@@ -14,6 +14,7 @@
 
 `timescale 1ns/100ps
 
+
 module harden_rx_top #(
 
   parameter FFT_SIZE    = 4096,                 // FFT size, maximum 8192 in 13 bit offset address

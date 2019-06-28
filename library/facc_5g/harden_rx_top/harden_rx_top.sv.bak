@@ -12,8 +12,6 @@
 //                0.20 2019/05/21, Phase_comps module added.     
 */
 
-
-
 `timescale 1ns/100ps
 
 module harden_rx_top #(
@@ -37,8 +35,7 @@ module harden_rx_top #(
   input  [31:0] gp_control,
   output [31:0] gp_status[STATUS_NUM-1:0],
 
-  // connect to harden_sync module
-  //input         mode   , //1:BBU 0:RRU      
+  // connect to harden_sync module     
   input         trigger,
   input         long_cp,
                  

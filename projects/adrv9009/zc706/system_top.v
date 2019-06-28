@@ -105,16 +105,15 @@ module system_top (
   output                  spi_mosi_adrv9009,
   input                   spi_miso_adrv9009,
 
-  // RFIC GPIO
   inout                   ad9528_reset_b,
   inout                   ad9528_sysref_req,
-  inout                   adrv9009_test,
   inout                   adrv9009_tx1_enable,
   inout                   adrv9009_tx2_enable,
   inout                   adrv9009_rx1_enable,
-  inout                   adrv9009_rx2_enable,        
+  inout                   adrv9009_rx2_enable,
+  inout                   adrv9009_test,
   inout                   adrv9009_reset_b,
-  inout                   adrv9009_gpint,  
+  inout                   adrv9009_gpint,
 
   inout                   adrv9009_gpio_00,
   inout                   adrv9009_gpio_01,
@@ -134,45 +133,8 @@ module system_top (
   inout                   adrv9009_gpio_13,
   inout                   adrv9009_gpio_17,
   inout                   adrv9009_gpio_16,
-  inout                   adrv9009_gpio_18,
-  
-  
-  // RFFC rf frond-end  io 13bit
-  output                  GPIO_TX_CAL      , //tdd_gpio_out[26] 
-//output                  GPIO_RF_SW_PHACAL, //tdd_gpio_out[25]
-  output                  GPIO_UA_TR1_A    , //tdd_gpio_out[24]
-  output                  GPIO_UA_TR1_SW   , //tdd_gpio_out[23]
-  output                  GPIO_UA_TR2_A    , //tdd_gpio_out[22]
-  output                  GPIO_UA_TR2_SW   , //tdd_gpio_out[21]
-//output                  GPIO_UB_TR1_A    , //tdd_gpio_out[20]
-//output                  GPIO_UB_TR1_SW   , //tdd_gpio_out[19]
-//output                  GPIO_UB_TR2_A    , //tdd_gpio_out[18]
-//output                  GPIO_UB_TR2_SW   , //tdd_gpio_out[17]
-//output                  GPIO_RF_SW_ORX   , //tdd_gpio_out[16]
-  output                  GPIO_SP4T_V1     , //tdd_gpio_out[15]
-  output                  GPIO_SP4T_V2     , //tdd_gpio_out[14]
- 
-  input                   pps_in_outside    ,   // 1 PPS input J67
-  output                  pa_power_enable   ,
-  
-  //10g    interface  
-  input                   sys_rst,                                                                                                                                                                                                   
-  input                   xg_refclk_n,        
-  input 			         	  xg_refclk_p,                
-                                           
-  output                  xg_txn,            
-  output                  xg_txp,            
-  input                   xg_rxn,            
-  input                   xg_rxp,   
-  
-  output                  tx_trigger ,
-  output                  tx_lcp     ,
-  output                  rx_trigger ,
-  output                  rx_lcp     ,                                                            
-                                                                       
-  output                  xg_tx_disable      
-);      
-                                            
+  inout                   adrv9009_gpio_18);
+
 //input                   sys_rst,
 //input                   sys_clk_p,
 //input                   sys_clk_n,
@@ -210,9 +172,6 @@ module system_top (
   wire                    tx_sync_1;
   wire                    sysref;
   wire                    sysref_out;
-  
-  wire                    calib_enable;
-  wire                    excalib_enable;
 
   assign spi_clk_ad9528 = spi_clk;
   assign spi_clk_adrv9009 = spi_clk;
@@ -224,70 +183,7 @@ module system_top (
   assign gpio_i[31:15] = gpio_o[31:15];
 
   assign sysref_out = 0;
-  
- //======================================================================                                                                                                               
- //                       inside 1pps  generator                                                                                                                                               
- //======================================================================  
- 
-    wire       pps_in_inside  ;     
-                                                                                                                  
-  // 1pps                                                                                                                                                                               
-    parameter PPS_CLK_FREQ = 122880000;                                                                                                                                                 
-    reg [26:0] pps_clk_cnt;                                                                                                                                                             
-                                                                                                                                                                                        
-    assign pps_in_inside = pps_clk_cnt >= (PPS_CLK_FREQ / 100) * 99;                                                                                                                           
-                                                                                                                                                                                        
-    always @ ( posedge ref_clk1 ) begin                                                                                                                                                  
-       if (pps_clk_cnt == PPS_CLK_FREQ - 1) begin                                                                                                                                       
-            pps_clk_cnt <= 0;                                                                                                                                                           
-        end                                                                                                                                                                             
-        else begin                                                                                                                                                                        
-            pps_clk_cnt <= pps_clk_cnt + 1'b1;                                                                                                                                            
-        end                                                                                                                                                                               
-    end                                                                                                                                                                                   
-  /*************************************************************/
-  // rfio_ctrl assign
-  wire [31:0] rfio_ctrl ; 
-  wire pps_in ; 
-  assign  pps_in = rfio_ctrl[0] ? pps_in_inside : pps_in_outside ;
-  assign  pa_power_enable = rfio_ctrl[4]; 
-  wire  arm_tdd_enable = rfio_ctrl[8];   
-  
-  /**************************************************************/    
-  // tdd gpio_out 
-  wire   [31:0]tdd_gpio_output;  
-  
-  wire    adrv9009_tx1_enable_from_arm;       
-  wire    adrv9009_tx2_enable_from_arm;       
-  wire    adrv9009_rx1_enable_from_arm;       
-  wire    adrv9009_rx2_enable_from_arm;                                                     
-  wire    adrv9009_gpio_09_from_arm;          
-  wire    adrv9009_gpio_04_from_arm;          
-  wire    adrv9009_gpio_05_from_arm;  
-  
-  assign    GPIO_TX_CAL           =    tdd_gpio_output[26]  ;
-//assign    GPIO_RF_SW_PHACAL     =    tdd_gpio_output[25]  ;
-  assign    GPIO_UA_TR1_A         =    tdd_gpio_output[24]  ;
-  assign    GPIO_UA_TR1_SW        =    tdd_gpio_output[23]  ;
-  assign    GPIO_UA_TR2_A         =    tdd_gpio_output[22]  ;
-  assign    GPIO_UA_TR2_SW        =    tdd_gpio_output[21]  ;
-//assign    GPIO_UB_TR1_A         =    tdd_gpio_output[20]  ;
-//assign    GPIO_UB_TR1_SW        =    tdd_gpio_output[19]  ;
-//assign    GPIO_UB_TR2_A         =    tdd_gpio_output[18]  ;
-//assign    GPIO_UB_TR2_SW        =    tdd_gpio_output[17]  ;
-//assign    GPIO_RF_SW_ORX        =    tdd_gpio_output[16]  ;
-  assign    GPIO_SP4T_V1          =    tdd_gpio_output[15]  ;
-  assign    GPIO_SP4T_V2          =    tdd_gpio_output[14]  ;
-   
-  assign    adrv9009_tx1_enable   =    arm_tdd_enable ? adrv9009_tx1_enable_from_arm  :  tdd_gpio_output[13]  ;
-  assign    adrv9009_tx2_enable   =    arm_tdd_enable ? adrv9009_tx2_enable_from_arm  :  tdd_gpio_output[12]  ;     
-  assign    adrv9009_rx1_enable   =    arm_tdd_enable ? adrv9009_rx1_enable_from_arm  :  tdd_gpio_output[ 9]  ;
-  assign    adrv9009_rx2_enable   =    arm_tdd_enable ? adrv9009_rx2_enable_from_arm  :  tdd_gpio_output[ 8]  ;                                                                                           
-  assign    adrv9009_gpio_09      =    arm_tdd_enable ? adrv9009_gpio_09_from_arm     :  tdd_gpio_output[ 5]  ;      //UA_ORX2_ENABLE 
-  assign    adrv9009_gpio_04      =    arm_tdd_enable ? adrv9009_gpio_04_from_arm     :  tdd_gpio_output[ 3]  ;      //UA_ORX2_TX_SEL1
-  assign    adrv9009_gpio_05      =    arm_tdd_enable ? adrv9009_gpio_05_from_arm     :  tdd_gpio_output[ 2]  ;      //UA_ORX2_TX_SEL0
-                                      
-  /*************************************************************/   
+
   // instantiations
 
   IBUFDS_GTE2 i_ibufds_rx_ref_clk (
@@ -338,34 +234,34 @@ module system_top (
     .dio_t ({gpio_t[59:32]}),
     .dio_i ({gpio_o[59:32]}),
     .dio_o ({gpio_i[59:32]}),
-    .dio_p ({ ad9528_reset_b,                // 59
-              ad9528_sysref_req,             // 58
-              adrv9009_tx1_enable_from_arm,  // 57
-              adrv9009_tx2_enable_from_arm,  // 5
-              adrv9009_rx1_enable_from_arm,  // 55
-              adrv9009_rx2_enable_from_arm,  // 54
-              adrv9009_test,                 // 53
-              adrv9009_reset_b,              // 52
-              adrv9009_gpint,                // 51
-              adrv9009_gpio_00,              // 50
-              adrv9009_gpio_01,              // 49
-              adrv9009_gpio_02,              // 48
-              adrv9009_gpio_03,              // 47
-              adrv9009_gpio_04_from_arm,     // 46
-              adrv9009_gpio_05_from_arm,     // 45
-              adrv9009_gpio_06,              // 44
-              adrv9009_gpio_07,              // 43
-              adrv9009_gpio_15,              // 42
+    .dio_p ({ ad9528_reset_b,       // 59
+              ad9528_sysref_req,    // 58
+              adrv9009_tx1_enable,  // 57
+              adrv9009_tx2_enable,  // 56
+              adrv9009_rx1_enable,  // 55
+              adrv9009_rx2_enable,  // 54
+              adrv9009_test,        // 53
+              adrv9009_reset_b,     // 52
+              adrv9009_gpint,       // 51
+              adrv9009_gpio_00,     // 50
+              adrv9009_gpio_01,     // 49
+              adrv9009_gpio_02,     // 48
+              adrv9009_gpio_03,     // 47
+              adrv9009_gpio_04,     // 46
+              adrv9009_gpio_05,     // 45
+              adrv9009_gpio_06,     // 44
+              adrv9009_gpio_07,     // 43
+              adrv9009_gpio_15,     // 42
               adrv9009_gpio_08,     // 41
-              adrv9009_gpio_09_from_arm,              // 40
-              adrv9009_gpio_10,              // 39
-              adrv9009_gpio_11,              // 38
-              adrv9009_gpio_12,              // 37
-              adrv9009_gpio_14,              // 36
-              adrv9009_gpio_13,              // 35
-              adrv9009_gpio_17,              // 34
-              adrv9009_gpio_16_from_arm,     // 33
-              adrv9009_gpio_18}));           // 32
+              adrv9009_gpio_09,     // 40
+              adrv9009_gpio_10,     // 39
+              adrv9009_gpio_11,     // 38
+              adrv9009_gpio_12,     // 37
+              adrv9009_gpio_14,     // 36
+              adrv9009_gpio_13,     // 35
+              adrv9009_gpio_17,     // 34
+              adrv9009_gpio_16,     // 33
+              adrv9009_gpio_18}));  // 32
 
   ad_iobuf #(.DATA_WIDTH(15)) i_iobuf_bd (
     .dio_t (gpio_t[14:0]),
@@ -445,7 +341,6 @@ module system_top (
     .spi0_sdi_i (spi_miso),
     .spi0_sdo_i (spi_mosi),
     .spi0_sdo_o (spi_mosi),
-    
     .spi1_clk_i (1'd0),
     .spi1_clk_o (),
     .spi1_csn_0_o (),
@@ -468,27 +363,9 @@ module system_top (
     .tx_data_3_p (tx_data_p[3]),
     .tx_ref_clk_0 (ref_clk1),
     .tx_sync_0 (tx_sync),
-    .tx_sysref_0 (sysref),
-    .rfio_ctrl(rfio_ctrl),	
-    .rf_gpio_out(tdd_gpio_output),    	
-    .pps_in(pps_in),
-    .xg_refclk_p     ( xg_refclk_p ),
-    .xg_refclk_n     ( xg_refclk_n ),
-    .xg_rxp          ( xg_rxp      ),          
-    .xg_rxn          ( xg_rxn      ),                                                                         
-    .xg_txp          ( xg_txp      ),          
-    .xg_txn          ( xg_txn      ),
-    .xg_reset        ( sys_rst     ),     
-    .xg_tx_disable   ( tx_disable  ),      
-    .xg_signal_detect( 1'b1        ),
-    .xg_tx_fault     ( 1'b0        ),
-    .tx_trigger      ( tx_trigger  ),
-    .tx_lcp          ( tx_lcp      ),
-    .rx_trigger      ( rx_trigger  ),
-    .rx_lcp          ( rx_lcp      )
-    );
+    .tx_sysref_0 (sysref));
 
 endmodule
 
-
-
+// ***************************************************************************
+// ***************************************************************************
