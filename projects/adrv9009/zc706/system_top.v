@@ -261,7 +261,7 @@ module system_top (
   wire    adrv9009_tx2_enable_from_arm;       
   wire    adrv9009_rx1_enable_from_arm;       
   wire    adrv9009_rx2_enable_from_arm;                                                     
-  wire    adrv9009_gpio_08_from_arm;          
+  wire    adrv9009_gpio_09_from_arm;          
   wire    adrv9009_gpio_04_from_arm;          
   wire    adrv9009_gpio_05_from_arm;  
   
@@ -283,9 +283,9 @@ module system_top (
   assign    adrv9009_tx2_enable   =    arm_tdd_enable ? adrv9009_tx2_enable_from_arm  :  tdd_gpio_output[12]  ;     
   assign    adrv9009_rx1_enable   =    arm_tdd_enable ? adrv9009_rx1_enable_from_arm  :  tdd_gpio_output[ 9]  ;
   assign    adrv9009_rx2_enable   =    arm_tdd_enable ? adrv9009_rx2_enable_from_arm  :  tdd_gpio_output[ 8]  ;                                                                                           
-  assign    adrv9009_gpio_08      =    arm_tdd_enable ? adrv9009_gpio_08_from_arm     :  tdd_gpio_output[ 5]  ;      //ORX1_ENABLE_UA 
-  assign    adrv9009_gpio_04      =    arm_tdd_enable ? adrv9009_gpio_04_from_arm     :  tdd_gpio_output[ 3]  ;      //ORX1_TX_SEL1_UA
-  assign    adrv9009_gpio_05      =    arm_tdd_enable ? adrv9009_gpio_05_from_arm     :  tdd_gpio_output[ 2]  ;      //ORX1_TX_SEL0_UA
+  assign    adrv9009_gpio_09      =    arm_tdd_enable ? adrv9009_gpio_09_from_arm     :  tdd_gpio_output[ 5]  ;      //UA_ORX2_ENABLE 
+  assign    adrv9009_gpio_04      =    arm_tdd_enable ? adrv9009_gpio_04_from_arm     :  tdd_gpio_output[ 3]  ;      //UA_ORX2_TX_SEL1
+  assign    adrv9009_gpio_05      =    arm_tdd_enable ? adrv9009_gpio_05_from_arm     :  tdd_gpio_output[ 2]  ;      //UA_ORX2_TX_SEL0
                                       
   /*************************************************************/   
   // instantiations
@@ -356,8 +356,8 @@ module system_top (
               adrv9009_gpio_06,              // 44
               adrv9009_gpio_07,              // 43
               adrv9009_gpio_15,              // 42
-              adrv9009_gpio_08_from_arm,     // 41
-              adrv9009_gpio_09,              // 40
+              adrv9009_gpio_08,     // 41
+              adrv9009_gpio_09_from_arm,              // 40
               adrv9009_gpio_10,              // 39
               adrv9009_gpio_11,              // 38
               adrv9009_gpio_12,              // 37
