@@ -1,5 +1,5 @@
 
-package require qsys
+package require -exact qsys 14.0
 
 source ../../scripts/adi_env.tcl
 source $ad_hdl_dir/library/scripts/adi_ip_alt.tcl
@@ -54,6 +54,11 @@ proc p_avl_adxphy {} {
     ad_conduit tx_ip_csr_byte_reversal export rx_ip_byte_reversal input 1
 
     for {set n 0} {$n < $m_num_of_lanes} {incr n} {
+
+      ad_conduit tx_ip_s_${n} export tx_ip_s_${n} input 3
+      ad_conduit tx_ip_d_${n} export tx_ip_d_${n} output 39
+      ad_conduit tx_phy_s_${n} export tx_phy_s_${n} output 3
+      ad_conduit tx_phy_d_${n} export tx_phy_d_${n} input 39
 
       ad_conduit tx_phy${n}_cal_busy tx_cal_busy tx_phy_cal_busy_${n} input 1
       ad_conduit tx_phy${n}_pcfifo_full export tx_phy_full_${n} input 1

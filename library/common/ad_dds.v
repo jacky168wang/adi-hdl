@@ -1,132 +1,103 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2018 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2011(c) Analog Devices, Inc.
 //
-// In this HDL repository, there are many different and unique modules, consisting
-// of various HDL (Verilog or VHDL) components. The individual modules are
-// developed independently, and may be accompanied by separate and unique license
-// terms.
+// All rights reserved.
 //
-// The user should read each of these license terms, and understand the
-// freedoms and responsibilities that he or she has by using this source/core.
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//     - Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     - Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in
+//       the documentation and/or other materials provided with the
+//       distribution.
+//     - Neither the name of Analog Devices, Inc. nor the names of its
+//       contributors may be used to endorse or promote products derived
+//       from this software without specific prior written permission.
+//     - The use of this software may or may not infringe the patent rights
+//       of one or more patent holders.  This license does not release you
+//       from the requirement that you obtain separate licenses from these
+//       patent holders to use this software.
+//     - Use of the software either in source or binary form, must be run
+//       on or directly connected to an Analog Devices Inc. component.
 //
-// This core is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE.
+// THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A
+// PARTICULAR PURPOSE ARE DISCLAIMED.
 //
-// Redistribution and use of source or resulting binaries, with or without modification
-// of this file, are permitted under one of the following two license terms:
-//
-//   1. The GNU General Public License version 2 as published by the
-//      Free Software Foundation, which can be found in the top level directory
-//      of this repository (LICENSE_GPL2), and also online at:
-//      <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
-//
-// OR
-//
-//   2. An ADI specific BSD license, which can be found in the top level directory
-//      of this repository (LICENSE_ADIBSD), and also on-line at:
-//      https://github.com/analogdevicesinc/hdl/blob/master/LICENSE_ADIBSD
-//      This will allow to generate bit files and not release the source code,
-//      as long as it attaches to an ADI device.
-//
+// IN NO EVENT SHALL ANALOG DEVICES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, INTELLECTUAL PROPERTY
+// RIGHTS, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+// BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ***************************************************************************
 // ***************************************************************************
 
 `timescale 1ns/100ps
 
-// single channel dds (dual tone)
 module ad_dds #(
 
-  parameter DISABLE = 0,
-  // range 8-24
-  parameter DDS_DW = 16,
-  // range 8-16 (FIX ME)
-  parameter PHASE_DW = 16,
-  // set 1 for CORDIC or 2 for Polynomial
-  parameter DDS_TYPE = 1,
-  // range 8-24
-  parameter CORDIC_DW = 16,
-  // range 8-24 (make sure CORDIC_PHASE_DW < CORDIC_DW)
-  parameter CORDIC_PHASE_DW = 16,
-  // the clock radtio between the device clock(sample rate) and the dac_core clock
-  // 2^N, 1<N<6
-  parameter CLK_RATIO = 1) (
+  // data path disable
+
+  parameter   DISABLE = 0) (
 
   // interface
 
-  input                               clk,
-  input                               dac_dds_format,
-  input                               dac_data_sync,
-  input                               dac_valid,
-  input       [                15:0]  tone_1_scale,
-  input       [                15:0]  tone_2_scale,
-  input       [                15:0]  tone_1_init_offset,
-  input       [                15:0]  tone_2_init_offset,
-  input       [        PHASE_DW-1:0]  tone_1_freq_word,
-  input       [        PHASE_DW-1:0]  tone_2_freq_word,
-  output  reg [DDS_DW*CLK_RATIO-1:0]  dac_dds_data
-  );
+  input           clk,
+  input           dds_format,
+  input   [15:0]  dds_phase_0,
+  input   [15:0]  dds_scale_0,
+  input   [15:0]  dds_phase_1,
+  input   [15:0]  dds_scale_1,
+  output  [15:0]  dds_data);
 
-  wire [DDS_DW*CLK_RATIO-1:0] dac_dds_data_s;
+  // internal registers
+
+  reg     [15:0]  dds_data_int = 'd0;
+  reg     [15:0]  dds_data_out = 'd0;
+  reg     [15:0]  dds_scale_0_d = 'd0;
+  reg     [15:0]  dds_scale_1_d = 'd0;
+
+  // internal signals
+
+  wire    [15:0]  dds_data_0_s;
+  wire    [15:0]  dds_data_1_s;
+
+  // disable
+
+  assign dds_data = (DISABLE == 1) ? 16'd0 : dds_data_out;
+
+  // dds channel output
 
   always @(posedge clk) begin
-    dac_dds_data <= dac_dds_data_s;
+    dds_data_int <= dds_data_0_s + dds_data_1_s;
+    dds_data_out[15:15] <= dds_data_int[15] ^ dds_format;
+    dds_data_out[14: 0] <= dds_data_int[14:0];
   end
 
-  genvar i;
-  generate
+  always @(posedge clk) begin
+    dds_scale_0_d <= dds_scale_0;
+    dds_scale_1_d <= dds_scale_1;
+  end
+  // dds-1
 
-    if (DISABLE == 1) begin
-      assign dac_dds_data_s = {(DDS_DW*CLK_RATIO-1){1'b0}};
-    end else begin
+  ad_dds_1 i_dds_1_0 (
+    .clk (clk),
+    .angle (dds_phase_0),
+    .scale (dds_scale_0_d),
+    .dds_data (dds_data_0_s));
 
-      // enable dds
+  // dds-2
 
-      reg  [PHASE_DW-1:0]  dac_dds_phase_0[1:CLK_RATIO];
-      reg  [PHASE_DW-1:0]  dac_dds_phase_1[1:CLK_RATIO];
-      reg  [PHASE_DW-1:0]  dac_dds_incr_0 = 'd0;
-      reg  [PHASE_DW-1:0]  dac_dds_incr_1 = 'd0;
-
-      always @(posedge clk) begin
-        dac_dds_incr_0 <= tone_1_freq_word * CLK_RATIO;
-        dac_dds_incr_1 <= tone_2_freq_word * CLK_RATIO;
-      end
-
-      //  phase accumulator
-      for (i=1; i <= CLK_RATIO; i=i+1) begin: dds_phase
-        always @(posedge clk) begin
-          if (dac_data_sync == 1'b1) begin
-            if (i == 1) begin
-              dac_dds_phase_0[1] <= tone_1_init_offset;
-              dac_dds_phase_1[1] <= tone_2_init_offset;
-            end else if (CLK_RATIO > 1)begin
-              dac_dds_phase_0[i] <= dac_dds_phase_0[i-1] + tone_1_freq_word;
-              dac_dds_phase_1[i] <= dac_dds_phase_1[i-1] + tone_2_freq_word;
-            end
-          end else if (dac_valid == 1'b1) begin
-            dac_dds_phase_0[i] <= dac_dds_phase_0[i] + dac_dds_incr_0;
-            dac_dds_phase_1[i] <= dac_dds_phase_1[i] + dac_dds_incr_1;
-          end
-        end
-
-        // phase to amplitude convertor
-         ad_dds_2 #(
-           .DDS_DW (DDS_DW),
-           .PHASE_DW (PHASE_DW),
-           .DDS_TYPE (DDS_TYPE),
-           .CORDIC_DW (CORDIC_DW),
-           .CORDIC_PHASE_DW (CORDIC_PHASE_DW))
-         i_dds_2 (
-          .clk (clk),
-          .dds_format (dac_dds_format),
-          .dds_phase_0 (dac_dds_phase_0[i]),
-          .dds_scale_0 (tone_1_scale),
-          .dds_phase_1 (dac_dds_phase_1[i]),
-          .dds_scale_1 (tone_2_scale),
-          .dds_data (dac_dds_data_s[(DDS_DW*i)-1:DDS_DW*(i-1)]));
-      end
-    end
-  endgenerate
+  ad_dds_1 i_dds_1_1 (
+    .clk (clk),
+    .angle (dds_phase_1),
+    .scale (dds_scale_1_d),
+    .dds_data (dds_data_1_s));
 
 endmodule
+
+// ***************************************************************************
+// ***************************************************************************

@@ -1,6 +1,6 @@
 
 
-package require qsys
+package require -exact qsys 13.0
 source ../scripts/adi_env.tcl
 source ../scripts/adi_ip_alt.tcl
 
@@ -16,10 +16,7 @@ add_fileset quartus_synth QUARTUS_SYNTH "" "Quartus Synthesis"
 set_fileset_property quartus_synth TOP_LEVEL axi_ad9371
 add_fileset_file ad_rst.v                   VERILOG PATH $ad_hdl_dir/library/common/ad_rst.v
 add_fileset_file ad_mul.v                   VERILOG PATH $ad_hdl_dir/library/altera/common/ad_mul.v
-add_fileset_file ad_dds_cordic_pipe.v       VERILOG PATH $ad_hdl_dir/library/common/ad_dds_cordic_pipe.v
-add_fileset_file ad_dds_sine_cordic.v       VERILOG PATH $ad_hdl_dir/library/common/ad_dds_sine_cordic.v
 add_fileset_file ad_dds_sine.v              VERILOG PATH $ad_hdl_dir/library/common/ad_dds_sine.v
-add_fileset_file ad_dds_2.v                 VERILOG PATH $ad_hdl_dir/library/common/ad_dds_2.v
 add_fileset_file ad_dds_1.v                 VERILOG PATH $ad_hdl_dir/library/common/ad_dds_1.v
 add_fileset_file ad_dds.v                   VERILOG PATH $ad_hdl_dir/library/common/ad_dds.v
 add_fileset_file ad_datafmt.v               VERILOG PATH $ad_hdl_dir/library/common/ad_datafmt.v
@@ -41,10 +38,7 @@ add_fileset_file axi_ad9371_rx_os.v         VERILOG PATH axi_ad9371_rx_os.v
 add_fileset_file axi_ad9371_tx_channel.v    VERILOG PATH axi_ad9371_tx_channel.v
 add_fileset_file axi_ad9371_tx.v            VERILOG PATH axi_ad9371_tx.v
 add_fileset_file axi_ad9371.v               VERILOG PATH axi_ad9371.v TOP_LEVEL_FILE
-add_fileset_file up_xfer_cntrl_constr.sdc   SDC PATH  $ad_hdl_dir/library/altera/common/up_xfer_cntrl_constr.sdc
-add_fileset_file up_xfer_status_constr.sdc  SDC PATH  $ad_hdl_dir/library/altera/common/up_xfer_status_constr.sdc
-add_fileset_file up_clock_mon_constr.sdc    SDC PATH  $ad_hdl_dir/library/altera/common/up_clock_mon_constr.sdc
-add_fileset_file up_rst_constr.sdc          SDC PATH  $ad_hdl_dir/library/altera/common/up_rst_constr.sdc
+add_fileset_file ad_axi_ip_constr.sdc       SDC     PATH $ad_hdl_dir/library/common/ad_axi_ip_constr.sdc
 
 # parameters
 
@@ -54,6 +48,13 @@ set_parameter_property ID DISPLAY_NAME ID
 set_parameter_property ID TYPE INTEGER
 set_parameter_property ID UNITS None
 set_parameter_property ID HDL_PARAMETER true
+
+add_parameter DEVICE_TYPE INTEGER 0
+set_parameter_property DEVICE_TYPE DEFAULT_VALUE 1
+set_parameter_property DEVICE_TYPE DISPLAY_NAME DEVICE_TYPE
+set_parameter_property DEVICE_TYPE TYPE INTEGER
+set_parameter_property DEVICE_TYPE UNITS None
+set_parameter_property DEVICE_TYPE HDL_PARAMETER true
 
 add_parameter DAC_DATAPATH_DISABLE INTEGER 0
 set_parameter_property DAC_DATAPATH_DISABLE DEFAULT_VALUE 0
@@ -71,7 +72,35 @@ set_parameter_property ADC_DATAPATH_DISABLE HDL_PARAMETER true
 
 # axi4 slave
 
-ad_ip_intf_s_axi s_axi_aclk s_axi_aresetn
+add_interface s_axi_clock clock end
+add_interface_port s_axi_clock s_axi_aclk clk Input 1
+
+add_interface s_axi_reset reset end
+set_interface_property s_axi_reset associatedClock s_axi_clock
+add_interface_port s_axi_reset s_axi_aresetn reset_n Input 1
+
+add_interface s_axi axi4lite end
+set_interface_property s_axi associatedClock s_axi_clock
+set_interface_property s_axi associatedReset s_axi_reset
+add_interface_port s_axi s_axi_awvalid awvalid Input 1
+add_interface_port s_axi s_axi_awaddr awaddr Input 16
+add_interface_port s_axi s_axi_awprot awprot Input 3
+add_interface_port s_axi s_axi_awready awready Output 1
+add_interface_port s_axi s_axi_wvalid wvalid Input 1
+add_interface_port s_axi s_axi_wdata wdata Input 32
+add_interface_port s_axi s_axi_wstrb wstrb Input 4
+add_interface_port s_axi s_axi_wready wready Output 1
+add_interface_port s_axi s_axi_bvalid bvalid Output 1
+add_interface_port s_axi s_axi_bresp bresp Output 2
+add_interface_port s_axi s_axi_bready bready Input 1
+add_interface_port s_axi s_axi_arvalid arvalid Input 1
+add_interface_port s_axi s_axi_araddr araddr Input 16
+add_interface_port s_axi s_axi_arprot arprot Input 3
+add_interface_port s_axi s_axi_arready arready Output 1
+add_interface_port s_axi s_axi_rvalid rvalid Output 1
+add_interface_port s_axi s_axi_rresp rresp Output 2
+add_interface_port s_axi s_axi_rdata rdata Output 32
+add_interface_port s_axi s_axi_rready rready Input 1
 
 # transceiver interface
 
@@ -141,6 +170,7 @@ set_interface_property adc_ch_3 associatedClock if_adc_clk
 set_interface_property adc_ch_3 associatedReset none
 
 ad_alt_intf signal  adc_dovf      input   1 ovf
+ad_alt_intf signal  adc_dunf      input   1 unf
 
 # adc-os-channel interface
 
@@ -161,6 +191,7 @@ set_interface_property adc_os_ch_1 associatedClock if_adc_os_clk
 set_interface_property adc_os_ch_1 associatedReset none
 
 ad_alt_intf signal  adc_os_dovf      input   1 ovf
+ad_alt_intf signal  adc_os_dunf      input   1 unf
 
 # dac-channel interface
 
@@ -196,5 +227,6 @@ add_interface_port dac_ch_3  dac_data_q1    data     Input   32
 set_interface_property dac_ch_3 associatedClock if_dac_clk
 set_interface_property dac_ch_3 associatedReset none
 
+ad_alt_intf signal  dac_dovf      input   1 ovf
 ad_alt_intf signal  dac_dunf      input   1 unf
 

@@ -1,18 +1,25 @@
-# a10soc carrier defaults
+
+# device settings
+
+set_global_assignment -name FAMILY "Arria 10"
+set_global_assignment -name DEVICE 10AS066N3F40E2SGE2
+
 # clocks and resets
 
 set_location_assignment PIN_AM10  -to sys_clk
 set_location_assignment PIN_AL10  -to "sys_clk(n)"
 set_location_assignment PIN_AV21  -to sys_resetn
 set_instance_assignment -name IO_STANDARD LVDS -to sys_clk
-set_instance_assignment -name IO_STANDARD LVDS -to "sys_clk(n)"
 set_instance_assignment -name IO_STANDARD "1.8 V" -to sys_resetn
-set_global_assignment -name PROGRAMMABLE_POWER_TECHNOLOGY_SETTING "FORCE ALL USED TILES TO HIGH SPEED"
 
 # hps-ddr4 (32)
 
 set_location_assignment PIN_F25   -to hps_ddr_ref_clk
 set_location_assignment PIN_G24   -to "hps_ddr_ref_clk(n)"
+
+set_instance_assignment -name IO_STANDARD LVDS -to hps_ddr_ref_clk
+set_instance_assignment -name INPUT_TERMINATION DIFFERENTIAL -to hps_ddr_ref_clk -disable
+
 set_location_assignment PIN_B20   -to hps_ddr_clk_p     
 set_location_assignment PIN_B19   -to hps_ddr_clk_n     
 set_location_assignment PIN_B26   -to hps_ddr_a[0]
@@ -230,10 +237,10 @@ set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[0]
 set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[1]
 set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[2]
 set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[3]
-set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[4]
-set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[5]
-set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[6]
-set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[7]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[0]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[1]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[2]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to gpio_bd_i[3]
 
 # hps-gpio (max-v-u16)
 
@@ -247,3 +254,6 @@ set_instance_assignment -name IO_STANDARD "1.8 V" -to hps_gpio[1]
 set_instance_assignment -name IO_STANDARD "1.8 V" -to hps_gpio[2]
 set_instance_assignment -name IO_STANDARD "1.8 V" -to hps_gpio[3]
 
+# source defaults
+
+source $ad_hdl_dir/projects/common/altera/sys_gen.tcl

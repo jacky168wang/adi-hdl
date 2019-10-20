@@ -1,92 +1,126 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2017 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2011(c) Analog Devices, Inc.
+// 
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//     - Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     - Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in
+//       the documentation and/or other materials provided with the
+//       distribution.
+//     - Neither the name of Analog Devices, Inc. nor the names of its
+//       contributors may be used to endorse or promote products derived
+//       from this software without specific prior written permission.
+//     - The use of this software may or may not infringe the patent rights
+//       of one or more patent holders.  This license does not release you
+//       from the requirement that you obtain separate licenses from these
+//       patent holders to use this software.
+//     - Use of the software either in source or binary form, must be run
+//       on or directly connected to an Analog Devices Inc. component.
+//    
+// THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A
+// PARTICULAR PURPOSE ARE DISCLAIMED.
 //
-// In this HDL repository, there are many different and unique modules, consisting
-// of various HDL (Verilog or VHDL) components. The individual modules are
-// developed independently, and may be accompanied by separate and unique license
-// terms.
-//
-// The user should read each of these license terms, and understand the
-// freedoms and responsibilities that he or she has by using this source/core.
-//
-// This core is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE.
-//
-// Redistribution and use of source or resulting binaries, with or without modification
-// of this file, are permitted under one of the following two license terms:
-//
-//   1. The GNU General Public License version 2 as published by the
-//      Free Software Foundation, which can be found in the top level directory
-//      of this repository (LICENSE_GPL2), and also online at:
-//      <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
-//
-// OR
-//
-//   2. An ADI specific BSD license, which can be found in the top level directory
-//      of this repository (LICENSE_ADIBSD), and also on-line at:
-//      https://github.com/analogdevicesinc/hdl/blob/master/LICENSE_ADIBSD
-//      This will allow to generate bit files and not release the source code,
-//      as long as it attaches to an ADI device.
-//
+// IN NO EVENT SHALL ANALOG DEVICES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, INTELLECTUAL PROPERTY
+// RIGHTS, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR 
+// BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ***************************************************************************
 // ***************************************************************************
 // software programmable clock generator (still needs a reference input!)
 
-`timescale 1ns/100ps
-
-module axi_clkgen #(
-
-  parameter         ID = 0,
-  parameter         DEVICE_TYPE = 0,
-  parameter         CLKSEL_EN = 0,
-  parameter real    CLKIN_PERIOD  = 5.000,
-  parameter real    CLKIN2_PERIOD  = 5.000,
-  parameter integer VCO_DIV = 11,
-  parameter real    VCO_MUL = 49.000,
-  parameter real    CLK0_DIV = 6.000,
-  parameter real    CLK0_PHASE = 0.000,
-  parameter integer CLK1_DIV = 6,
-  parameter real    CLK1_PHASE = 0.000) (
+module axi_clkgen (
 
   // clocks
 
-  input                   clk,
-  input                   clk2,
-  output                  clk_0,
-  output                  clk_1,
+  clk,
+  clk2,
+  clk_0,
+  clk_1,
 
   // axi interface
 
-  input                   s_axi_aclk,
-  input                   s_axi_aresetn,
-  input                   s_axi_awvalid,
-  input       [15:0]      s_axi_awaddr,
-  output                  s_axi_awready,
-  input                   s_axi_wvalid,
-  input       [31:0]      s_axi_wdata,
-  input       [ 3:0]      s_axi_wstrb,
-  output                  s_axi_wready,
-  output                  s_axi_bvalid,
-  output      [ 1:0]      s_axi_bresp,
-  input                   s_axi_bready,
-  input                   s_axi_arvalid,
-  input       [15:0]      s_axi_araddr,
-  output                  s_axi_arready,
-  output                  s_axi_rvalid,
-  output      [31:0]      s_axi_rdata,
-  output      [ 1:0]      s_axi_rresp,
-  input                   s_axi_rready,
-  input       [ 2:0]      s_axi_awprot,
-  input       [ 2:0]      s_axi_arprot);
+  s_axi_aclk,
+  s_axi_aresetn,
+  s_axi_awvalid,
+  s_axi_awaddr,
+  s_axi_awready,
+  s_axi_wvalid,
+  s_axi_wdata,
+  s_axi_wstrb,
+  s_axi_wready,
+  s_axi_bvalid,
+  s_axi_bresp,
+  s_axi_bready,
+  s_axi_arvalid,
+  s_axi_araddr,
+  s_axi_arready,
+  s_axi_rvalid,
+  s_axi_rdata,
+  s_axi_rresp,
+  s_axi_rready,
+  s_axi_awprot,
+  s_axi_arprot);
+
+  // parameters
+
+  parameter   ID = 0;
+  parameter   DEVICE_TYPE = 0;
+  parameter   CLKIN_PERIOD  = 5.0;
+  parameter   CLKIN2_PERIOD  = 5.0;
+  parameter   VCO_DIV = 11;
+  parameter   VCO_MUL = 49;
+  parameter   CLK0_DIV = 6;
+  parameter   CLK0_PHASE = 0.000;
+  parameter   CLK1_DIV = 6;
+  parameter   CLK1_PHASE = 0.000;
+  parameter   CLK2_DIV = 6;
+  parameter   CLK2_PHASE = 0.000;
+
+  // clocks
+
+  input           clk;
+  input           clk2;
+  output          clk_0;
+  output          clk_1;
+
+  // axi interface
+
+  input           s_axi_aclk;
+  input           s_axi_aresetn;
+  input           s_axi_awvalid;
+  input   [31:0]  s_axi_awaddr;
+  output          s_axi_awready;
+  input           s_axi_wvalid;
+  input   [31:0]  s_axi_wdata;
+  input   [ 3:0]  s_axi_wstrb;
+  output          s_axi_wready;
+  output          s_axi_bvalid;
+  output  [ 1:0]  s_axi_bresp;
+  input           s_axi_bready;
+  input           s_axi_arvalid;
+  input   [31:0]  s_axi_araddr;
+  output          s_axi_arready;
+  output          s_axi_rvalid;
+  output  [31:0]  s_axi_rdata;
+  output  [ 1:0]  s_axi_rresp;
+  input           s_axi_rready;
+  input   [ 2:0]  s_axi_awprot;
+  input   [ 2:0]  s_axi_arprot;
+
 
 
   // reset and clocks
 
   wire            mmcm_rst;
-  wire            clk_sel_s;
-  wire            up_clk_sel_s;
+  wire            clk_sel;
   wire            up_rstn;
   wire            up_clk;
 
@@ -146,11 +180,9 @@ module axi_clkgen #(
 
   // processor interface
 
-  up_clkgen #(
-    .ID(ID)
-  ) i_up_clkgen (
+  up_clkgen i_up_clkgen (
     .mmcm_rst (mmcm_rst),
-    .clk_sel (up_clk_sel_s),
+    .clk_sel (clk_sel),
     .up_drp_sel (up_drp_sel_s),
     .up_drp_wr (up_drp_wr_s),
     .up_drp_addr (up_drp_addr_s),
@@ -169,16 +201,6 @@ module axi_clkgen #(
     .up_rdata (up_rdata_s),
     .up_rack (up_rack_s));
 
-  // If CLKSEL_EN is not active, the clk0 port of the MMCM is used, this
-  // should be used when the MMCM has only one active clock source
-
-  generate if (CLKSEL_EN == 1) begin
-    assign clk_sel_s = up_clk_sel_s;
-  end else begin
-    assign clk_sel_s = 1'b1;
-  end
-  endgenerate
-
   // mmcm instantiations
 
   ad_mmcm_drp #(
@@ -194,7 +216,7 @@ module axi_clkgen #(
   i_mmcm_drp (
     .clk (clk),
     .clk2 (clk2),
-    .clk_sel(clk_sel_s),
+    .clk_sel(clk_sel),
     .mmcm_rst (mmcm_rst),
     .mmcm_clk_0 (clk_0),
     .mmcm_clk_1 (clk_1),

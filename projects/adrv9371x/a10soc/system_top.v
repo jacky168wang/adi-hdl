@@ -1,35 +1,37 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2017 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2011(c) Analog Devices, Inc.
 //
-// In this HDL repository, there are many different and unique modules, consisting
-// of various HDL (Verilog or VHDL) components. The individual modules are
-// developed independently, and may be accompanied by separate and unique license
-// terms.
+// All rights reserved.
 //
-// The user should read each of these license terms, and understand the
-// freedoms and responsibilities that he or she has by using this source/core.
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//     - Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     - Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in
+//       the documentation and/or other materials provided with the
+//       distribution.
+//     - Neither the name of Analog Devices, Inc. nor the names of its
+//       contributors may be used to endorse or promote products derived
+//       from this software without specific prior written permission.
+//     - The use of this software may or may not infringe the patent rights
+//       of one or more patent holders.  This license does not release you
+//       from the requirement that you obtain separate licenses from these
+//       patent holders to use this software.
+//     - Use of the software either in source or binary form, must be run
+//       on or directly connected to an Analog Devices Inc. component.
 //
-// This core is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE.
+// THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A
+// PARTICULAR PURPOSE ARE DISCLAIMED.
 //
-// Redistribution and use of source or resulting binaries, with or without modification
-// of this file, are permitted under one of the following two license terms:
-//
-//   1. The GNU General Public License version 2 as published by the
-//      Free Software Foundation, which can be found in the top level directory
-//      of this repository (LICENSE_GPL2), and also online at:
-//      <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
-//
-// OR
-//
-//   2. An ADI specific BSD license, which can be found in the top level directory
-//      of this repository (LICENSE_ADIBSD), and also on-line at:
-//      https://github.com/analogdevicesinc/hdl/blob/master/LICENSE_ADIBSD
-//      This will allow to generate bit files and not release the source code,
-//      as long as it attaches to an ADI device.
-//
+// IN NO EVENT SHALL ANALOG DEVICES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, INTELLECTUAL PROPERTY
+// RIGHTS, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+// BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ***************************************************************************
 // ***************************************************************************
 
@@ -47,7 +49,7 @@ module system_top (
   input             hps_ddr_ref_clk,
   output  [  0:0]   hps_ddr_clk_p,
   output  [  0:0]   hps_ddr_clk_n,
-  output  [ 16:0]   hps_ddr_a,
+  output  [ 16:0]   hsp_ddr_a,
   output  [  1:0]   hps_ddr_ba,
   output  [  0:0]   hps_ddr_bg,
   output  [  0:0]   hps_ddr_cke,
@@ -62,27 +64,6 @@ module system_top (
   inout   [ 31:0]   hps_ddr_dq,
   inout   [  3:0]   hps_ddr_dbi_n,
   input             hps_ddr_rzq,
-
-  // pl-ddr4
- 
-  input             sys_ddr_ref_clk,
-  output  [  0:0]   sys_ddr_clk_p,
-  output  [  0:0]   sys_ddr_clk_n,
-  output  [ 16:0]   sys_ddr_a,
-  output  [  1:0]   sys_ddr_ba,
-  output  [  0:0]   sys_ddr_bg,
-  output  [  0:0]   sys_ddr_cke,
-  output  [  0:0]   sys_ddr_cs_n,
-  output  [  0:0]   sys_ddr_odt,
-  output  [  0:0]   sys_ddr_reset_n,
-  output  [  0:0]   sys_ddr_act_n,
-  output  [  0:0]   sys_ddr_par,
-  input   [  0:0]   sys_ddr_alert_n,
-  inout   [  7:0]   sys_ddr_dqs_p,
-  inout   [  7:0]   sys_ddr_dqs_n,
-  inout   [ 63:0]   sys_ddr_dq,
-  inout   [  7:0]   sys_ddr_dbi_n,
-  input             sys_ddr_rzq,
 
   // hps-ethernet
 
@@ -132,8 +113,8 @@ module system_top (
 
   input             ref_clk0,
   input             ref_clk1,
-  input   [  3:0]   rx_serial_data,
-  output  [  3:0]   tx_serial_data,
+  input   [  3:0]   rx_data,
+  output  [  3:0]   tx_data,
   output            rx_sync,
   output            rx_os_sync,
   input             tx_sync,
@@ -159,87 +140,61 @@ module system_top (
 
   // internal signals
 
-  wire              sys_ddr_cal_success;
-  wire              sys_ddr_cal_fail;
   wire              sys_hps_resetn;
   wire              sys_resetn_s;
-  wire    [ 63:0]   gpio_i;
-  wire    [ 63:0]   gpio_o;
-  wire    [  7:0]   spi_csn_s;
-  wire              dac_fifo_bypass;
-
-  // assignments
-
-  assign spi_csn_ad9528 = spi_csn_s[0];
-  assign spi_csn_ad9371 = spi_csn_s[1];
+  wire    [  7:0]   spi_csn;
+  wire    [ 31:0]   gpio_i;
+  wire    [ 31:0]   gpio_o;
 
   // gpio (ad9371)
 
-  assign gpio_i[63:61] = gpio_o[63:61];
+  assign ad9371_tx1_enable = gpio_o[23];
+  assign ad9371_tx2_enable = gpio_o[22];
+  assign ad9371_rx1_enable = gpio_o[21];
+  assign ad9371_rx2_enable = gpio_o[20];
+  assign ad9371_test = gpio_o[19];
+  assign ad9371_reset_b = gpio_o[18];
+  assign ad9528_sysref_req = gpio_o[17];
+  assign ad9528_reset_b = gpio_o[16];
 
-  assign dac_fifo_bypass = gpio_o[60];
-  assign gpio_i[60:60] = gpio_o[60:60];
-
-  assign ad9528_reset_b = gpio_o[59];
-  assign ad9528_sysref_req = gpio_o[58];
-  assign ad9371_tx1_enable = gpio_o[57];
-  assign ad9371_tx2_enable = gpio_o[56];
-  assign ad9371_rx1_enable = gpio_o[55];
-  assign ad9371_rx2_enable = gpio_o[54];
-  assign ad9371_test = gpio_o[53];
-  assign ad9371_reset_b = gpio_o[52];
-  assign gpio_i[59:52] = gpio_o[59:52];
-
-  assign gpio_i[51:51] = ad9371_gpint;
-
-  assign gpio_i[50:32] = gpio_o[50:32];
+  assign gpio_i[31:25] = gpio_o[31:25];
+  assign gpio_i[24:24] = ad9371_gpint;
+  assign gpio_i[23:16] = gpio_o[23:16];
   
-  // board stuff (max-v-u21)
+  // gpio (max-v-u21)
 
-  assign gpio_i[31:14] = gpio_o[31:14];
-  assign gpio_i[13:13] = sys_ddr_cal_success;
-  assign gpio_i[12:12] = sys_ddr_cal_fail;
+  assign gpio_i[15:12] = gpio_o[15:12];
   assign gpio_i[11: 4] = gpio_bd_i;
-  assign gpio_i[ 3: 0] = gpio_o[ 3: 0];
+  assign gpio_i[ 3: 0] = gpio_o[3:0];
 
   assign gpio_bd_o = gpio_o[3:0];
 
-  // peripheral reset
+  // spi
 
+  assign spi_csn_ad9528 = spi_csn[1];
+  assign spi_csn_ad9371 = spi_csn[0];
   assign sys_resetn_s = sys_resetn & sys_hps_resetn;
 
   // instantiations
 
   system_bd i_system_bd (
-    .ad9371_gpio_export (ad9371_gpio),
+    .avl_ad9371_gpio_export (ad9371_gpio),
+    .rx_data_0_rx_serial_data (rx_data[0]),
+    .rx_data_1_rx_serial_data (rx_data[1]),
+    .rx_data_2_rx_serial_data (rx_data[2]),
+    .rx_data_3_rx_serial_data (rx_data[3]),
+    .rx_os_ref_clk_clk (ref_clk1),
+    .rx_os_sync_export (rx_os_sync),
+    .rx_os_sysref_export (sysref),
+    .rx_ref_clk_clk (ref_clk1),
+    .rx_sync_export (rx_sync),
+    .rx_sysref_export (sysref),
     .sys_clk_clk (sys_clk),
-    .sys_ddr_mem_mem_ck (sys_ddr_clk_p),
-    .sys_ddr_mem_mem_ck_n (sys_ddr_clk_n),
-    .sys_ddr_mem_mem_a (sys_ddr_a),
-    .sys_ddr_mem_mem_act_n (sys_ddr_act_n),
-    .sys_ddr_mem_mem_ba (sys_ddr_ba),
-    .sys_ddr_mem_mem_bg (sys_ddr_bg),
-    .sys_ddr_mem_mem_cke (sys_ddr_cke),
-    .sys_ddr_mem_mem_cs_n (sys_ddr_cs_n),
-    .sys_ddr_mem_mem_odt (sys_ddr_odt),
-    .sys_ddr_mem_mem_reset_n (sys_ddr_reset_n),
-    .sys_ddr_mem_mem_par (sys_ddr_par),
-    .sys_ddr_mem_mem_alert_n (sys_ddr_alert_n),
-    .sys_ddr_mem_mem_dqs (sys_ddr_dqs_p),
-    .sys_ddr_mem_mem_dqs_n (sys_ddr_dqs_n),
-    .sys_ddr_mem_mem_dq (sys_ddr_dq),
-    .sys_ddr_mem_mem_dbi_n (sys_ddr_dbi_n),
-    .sys_ddr_oct_oct_rzqin (sys_ddr_rzq),
-    .sys_ddr_ref_clk_clk (sys_ddr_ref_clk),
-    .sys_ddr_status_local_cal_success (sys_ddr_cal_success),
-    .sys_ddr_status_local_cal_fail (sys_ddr_cal_fail),
-    .sys_gpio_bd_in_port (gpio_i[31:0]),
-    .sys_gpio_bd_out_port (gpio_o[31:0]),
-    .sys_gpio_in_export (gpio_i[63:32]),
-    .sys_gpio_out_export (gpio_o[63:32]),
+    .sys_gpio_in_export (gpio_i),
+    .sys_gpio_out_export (gpio_o),
     .sys_hps_ddr_mem_ck (hps_ddr_clk_p),
     .sys_hps_ddr_mem_ck_n (hps_ddr_clk_n),
-    .sys_hps_ddr_mem_a (hps_ddr_a),
+    .sys_hps_ddr_mem_a (hsp_ddr_a),
     .sys_hps_ddr_mem_act_n (hps_ddr_act_n),
     .sys_hps_ddr_mem_ba (hps_ddr_ba),
     .sys_hps_ddr_mem_bg (hps_ddr_bg),
@@ -306,20 +261,14 @@ module system_top (
     .sys_spi_MISO (spi_miso),
     .sys_spi_MOSI (spi_mosi),
     .sys_spi_SCLK (spi_clk),
-    .sys_spi_SS_n (spi_csn_s),
-    .tx_serial_data_tx_serial_data (tx_serial_data),
-    .tx_fifo_bypass_bypass (dac_fifo_bypass),
+    .sys_spi_SS_n (spi_csn),
+    .tx_data_0_tx_serial_data (tx_data[0]),
+    .tx_data_1_tx_serial_data (tx_data[1]),
+    .tx_data_2_tx_serial_data (tx_data[2]),
+    .tx_data_3_tx_serial_data (tx_data[3]),
     .tx_ref_clk_clk (ref_clk1),
     .tx_sync_export (tx_sync),
-    .tx_sysref_export (sysref),
-    .rx_serial_data_rx_serial_data (rx_serial_data[1:0]),
-    .rx_os_serial_data_rx_serial_data (rx_serial_data[3:2]),
-    .rx_os_ref_clk_clk (ref_clk1),
-    .rx_os_sync_export (rx_os_sync),
-    .rx_os_sysref_export (sysref),
-    .rx_ref_clk_clk (ref_clk1),
-    .rx_sync_export (rx_sync),
-    .rx_sysref_export (sysref));
+    .tx_sysref_export (sysref));
 
 endmodule
 

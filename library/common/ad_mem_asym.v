@@ -1,35 +1,39 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2017 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2011(c) Analog Devices, Inc.
 //
-// In this HDL repository, there are many different and unique modules, consisting
-// of various HDL (Verilog or VHDL) components. The individual modules are
-// developed independently, and may be accompanied by separate and unique license
-// terms.
+// All rights reserved.
 //
-// The user should read each of these license terms, and understand the
-// freedoms and responsibilities that he or she has by using this source/core.
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//     - Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     - Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in
+//       the documentation and/or other materials provided with the
+//       distribution.
+//     - Neither the name of Analog Devices, Inc. nor the names of its
+//       contributors may be used to endorse or promote products derived
+//       from this software without specific prior written permission.
+//     - The use of this software may or may not infringe the patent rights
+//       of one or more patent holders.  This license does not release you
+//       from the requirement that you obtain separate licenses from these
+//       patent holders to use this software.
+//     - Use of the software either in source or binary form, must be run
+//       on or directly connected to an Analog Devices Inc. component.
 //
-// This core is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE.
+// THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A
+// PARTICULAR PURPOSE ARE DISCLAIMED.
 //
-// Redistribution and use of source or resulting binaries, with or without modification
-// of this file, are permitted under one of the following two license terms:
-//
-//   1. The GNU General Public License version 2 as published by the
-//      Free Software Foundation, which can be found in the top level directory
-//      of this repository (LICENSE_GPL2), and also online at:
-//      <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
-//
-// OR
-//
-//   2. An ADI specific BSD license, which can be found in the top level directory
-//      of this repository (LICENSE_ADIBSD), and also on-line at:
-//      https://github.com/analogdevicesinc/hdl/blob/master/LICENSE_ADIBSD
-//      This will allow to generate bit files and not release the source code,
-//      as long as it attaches to an ADI device.
-//
+// IN NO EVENT SHALL ANALOG DEVICES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, INTELLECTUAL PROPERTY
+// RIGHTS, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+// BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// ***************************************************************************
+// ***************************************************************************
 // ***************************************************************************
 // ***************************************************************************
 
@@ -38,58 +42,50 @@
 
 `timescale 1ns/100ps
 
-module ad_mem_asym #(
+module ad_mem_asym (
 
-  parameter   A_ADDRESS_WIDTH =  8,
-  parameter   A_DATA_WIDTH = 256,
-  parameter   B_ADDRESS_WIDTH =   10,
-  parameter   B_DATA_WIDTH =  64) (
+  clka,
+  wea,
+  addra,
+  dina,
 
-  input                             clka,
-  input                             wea,
-  input       [A_ADDRESS_WIDTH-1:0] addra,
-  input       [A_DATA_WIDTH-1:0]    dina,
+  clkb,
+  addrb,
+  doutb);
 
-  input                             clkb,
-  input                             reb,
-  input       [B_ADDRESS_WIDTH-1:0] addrb,
-  output  reg [B_DATA_WIDTH-1:0]    doutb);
+  parameter   A_ADDRESS_WIDTH =  8;
+  parameter   A_DATA_WIDTH = 256;
+  parameter   B_ADDRESS_WIDTH =   10;
+  parameter   B_DATA_WIDTH =  64;
 
-
-  `define max(a,b) {(a) > (b) ? (a) : (b)}
-  `define min(a,b) {(a) < (b) ? (a) : (b)}
-
-  function integer clog2;
-    input integer value;
-    begin
-      if (value < 2)
-        clog2 = value;
-      else begin
-        value = value - 1;
-        for (clog2 = 0; value > 0; clog2 = clog2 + 1)
-          value = value >> 1;
-      end
-    end
-  endfunction
-
-  localparam  MEM_ADDRESS_WIDTH = `max(A_ADDRESS_WIDTH, B_ADDRESS_WIDTH);
-  localparam  MIN_WIDTH = `min(A_DATA_WIDTH, B_DATA_WIDTH);
-  localparam  MAX_WIDTH = `max(A_DATA_WIDTH, B_DATA_WIDTH);
-  localparam  MEM_DATA_WIDTH = MIN_WIDTH;
+  localparam  MEM_ADDRESS_WIDTH = (A_ADDRESS_WIDTH > B_ADDRESS_WIDTH) ? A_ADDRESS_WIDTH : B_ADDRESS_WIDTH;
+  localparam  MEM_DATA_WIDTH = (A_DATA_WIDTH > B_DATA_WIDTH) ? B_DATA_WIDTH : A_DATA_WIDTH;
   localparam  MEM_SIZE = 2 ** MEM_ADDRESS_WIDTH;
-  localparam  MEM_RATIO = MAX_WIDTH / MIN_WIDTH;
-  localparam  MEM_RATIO_LOG2 = clog2(MEM_RATIO);
+  // suported ratios: 1:1 / 1:2 / 1:4 / 1:8 / 2:1 / 4:1 / 8:1
+  localparam  MEM_RATIO = (A_DATA_WIDTH > B_DATA_WIDTH) ? A_DATA_WIDTH/B_DATA_WIDTH : B_DATA_WIDTH/A_DATA_WIDTH;
+  localparam  MEM_IO_COMP = (A_DATA_WIDTH > B_DATA_WIDTH) ? 1'b1 : 1'b0;
+
+  // write interface
+
+  input                           clka;
+  input                           wea;
+  input   [A_ADDRESS_WIDTH-1:0]   addra;
+  input   [A_DATA_WIDTH-1:0]      dina;
+
+  // read interface
+
+  input                           clkb;
+  input   [B_ADDRESS_WIDTH-1:0]   addrb;
+  output  [B_DATA_WIDTH-1:0]      doutb;
 
   // internal registers
 
-  reg      [MEM_DATA_WIDTH-1:0]    m_ram[0:MEM_SIZE-1];
+  reg     [MEM_DATA_WIDTH-1:0]    m_ram[0:MEM_SIZE-1];
+  reg     [B_DATA_WIDTH-1:0]      doutb;
 
-  //---------------------------------------------------------------------------
-  // write interface
-  //---------------------------------------------------------------------------
+  // write interface options
 
-  // write data width is narrower than read data width
-  generate if (A_DATA_WIDTH <= B_DATA_WIDTH) begin
+  generate if (MEM_IO_COMP == 0) begin
     always @(posedge clka) begin
       if (wea == 1'b1) begin
         m_ram[addra] <= dina;
@@ -98,46 +94,81 @@ module ad_mem_asym #(
   end
   endgenerate
 
-  // write data width is wider than read data width
-  generate if (A_DATA_WIDTH > B_DATA_WIDTH) begin
-    always @(posedge clka) begin : memwrite
-      integer i;
-      reg [MEM_RATIO_LOG2-1:0] lsb;
-      for (i = 0; i < MEM_RATIO; i = i + 1) begin : awrite
-        lsb = i;
-        if (wea) begin
-          m_ram[{addra, lsb}] <= dina[i * MIN_WIDTH +: MIN_WIDTH];
-        end
+  generate if ((MEM_IO_COMP == 1) && (MEM_RATIO == 2)) begin
+    always @(posedge clka) begin
+      if (wea == 1'b1) begin
+        m_ram[{addra, 1'd0}] <= dina[((1*B_DATA_WIDTH)-1):(B_DATA_WIDTH*0)];
+        m_ram[{addra, 1'd1}] <= dina[((2*B_DATA_WIDTH)-1):(B_DATA_WIDTH*1)];
       end
     end
   end
   endgenerate
 
-  //---------------------------------------------------------------------------
-  // read interface
-  //---------------------------------------------------------------------------
+  generate if ((MEM_IO_COMP == 1) && (MEM_RATIO == 4)) begin
+    always @(posedge clka) begin
+      if (wea == 1'b1) begin
+        m_ram[{addra, 2'd0}] <= dina[((1*B_DATA_WIDTH)-1):(B_DATA_WIDTH*0)];
+        m_ram[{addra, 2'd1}] <= dina[((2*B_DATA_WIDTH)-1):(B_DATA_WIDTH*1)];
+        m_ram[{addra, 2'd2}] <= dina[((3*B_DATA_WIDTH)-1):(B_DATA_WIDTH*2)];
+        m_ram[{addra, 2'd3}] <= dina[((4*B_DATA_WIDTH)-1):(B_DATA_WIDTH*3)];
+      end
+    end
+  end
+  endgenerate
 
-  // read data width is narrower than write data width
-  generate if (A_DATA_WIDTH >= B_DATA_WIDTH) begin
+  generate if ((MEM_IO_COMP == 1) && (MEM_RATIO == 8)) begin
+    always @(posedge clka) begin
+      if (wea == 1'b1) begin
+        m_ram[{addra, 3'd0}] <= dina[((1*B_DATA_WIDTH)-1):(B_DATA_WIDTH*0)];
+        m_ram[{addra, 3'd1}] <= dina[((2*B_DATA_WIDTH)-1):(B_DATA_WIDTH*1)];
+        m_ram[{addra, 3'd2}] <= dina[((3*B_DATA_WIDTH)-1):(B_DATA_WIDTH*2)];
+        m_ram[{addra, 3'd3}] <= dina[((4*B_DATA_WIDTH)-1):(B_DATA_WIDTH*3)];
+        m_ram[{addra, 3'd4}] <= dina[((5*B_DATA_WIDTH)-1):(B_DATA_WIDTH*4)];
+        m_ram[{addra, 3'd5}] <= dina[((6*B_DATA_WIDTH)-1):(B_DATA_WIDTH*5)];
+        m_ram[{addra, 3'd6}] <= dina[((7*B_DATA_WIDTH)-1):(B_DATA_WIDTH*6)];
+        m_ram[{addra, 3'd7}] <= dina[((8*B_DATA_WIDTH)-1):(B_DATA_WIDTH*7)];
+      end
+    end
+  end
+  endgenerate
+
+  // read interface options
+
+  generate if ((MEM_IO_COMP == 1) || (MEM_RATIO == 1)) begin
     always @(posedge clkb) begin
-      if (reb == 1'b1) begin
-        doutb <= m_ram[addrb];
-      end
+      doutb <= m_ram[addrb];
     end
   end
   endgenerate
 
-  // read data width is wider than write data width
-  generate if (A_DATA_WIDTH < B_DATA_WIDTH) begin
-    always @(posedge clkb) begin : memread
-      integer i;
-      reg [MEM_RATIO_LOG2-1:0] lsb;
-      for (i = 0; i < MEM_RATIO; i = i + 1) begin : aread
-        lsb = i;
-        if (reb == 1'b1) begin
-          doutb[i*MIN_WIDTH +: MIN_WIDTH] <= m_ram[{addrb, lsb}];
-        end
-      end
+  generate if ((MEM_IO_COMP == 0) && (MEM_RATIO == 2)) begin
+    always @(posedge clkb) begin
+      doutb <= {m_ram[{addrb, 1'd1}],
+                m_ram[{addrb, 1'd0}]};
+    end
+  end
+  endgenerate
+
+  generate if ((MEM_IO_COMP == 0) && (MEM_RATIO == 4)) begin
+    always @(posedge clkb) begin
+      doutb <= {m_ram[{addrb, 2'd3}],
+                m_ram[{addrb, 2'd2}],
+                m_ram[{addrb, 2'd1}],
+                m_ram[{addrb, 2'd0}]};
+    end
+  end
+  endgenerate
+
+  generate if ((MEM_IO_COMP == 0) && (MEM_RATIO == 8)) begin
+    always @(posedge clkb) begin
+      doutb <= {m_ram[{addrb, 3'd7}],
+                m_ram[{addrb, 3'd6}],
+                m_ram[{addrb, 3'd5}],
+                m_ram[{addrb, 3'd4}],
+                m_ram[{addrb, 3'd3}],
+                m_ram[{addrb, 3'd2}],
+                m_ram[{addrb, 3'd1}],
+                m_ram[{addrb, 3'd0}]};
     end
   end
   endgenerate

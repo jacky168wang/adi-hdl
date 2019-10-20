@@ -5,20 +5,14 @@ source $ad_hdl_dir/library/scripts/adi_ip.tcl
 
 adi_ip_create axi_ad9371
 adi_ip_files axi_ad9371 [list \
-  "$ad_hdl_dir/library/xilinx/common/up_xfer_cntrl_constr.xdc" \
-  "$ad_hdl_dir/library/xilinx/common/ad_rst_constr.xdc" \
-  "$ad_hdl_dir/library/xilinx/common/up_xfer_status_constr.xdc" \
-  "$ad_hdl_dir/library/xilinx/common/up_clock_mon_constr.xdc" \
+  "$ad_hdl_dir/library/common/ad_axi_ip_constr.xdc" \
   "$ad_hdl_dir/library/common/ad_rst.v" \
-  "$ad_hdl_dir/library/xilinx/common/ad_dcfilter.v" \
   "$ad_hdl_dir/library/xilinx/common/ad_mul.v" \
-  "$ad_hdl_dir/library/common/ad_dds_cordic_pipe.v" \
-  "$ad_hdl_dir/library/common/ad_dds_sine_cordic.v" \
   "$ad_hdl_dir/library/common/ad_dds_sine.v" \
-  "$ad_hdl_dir/library/common/ad_dds_2.v" \
   "$ad_hdl_dir/library/common/ad_dds_1.v" \
   "$ad_hdl_dir/library/common/ad_dds.v" \
   "$ad_hdl_dir/library/common/ad_datafmt.v" \
+  "$ad_hdl_dir/library/common/ad_dcfilter.v" \
   "$ad_hdl_dir/library/common/ad_iqcor.v" \
   "$ad_hdl_dir/library/common/up_axi.v" \
   "$ad_hdl_dir/library/common/up_xfer_cntrl.v" \
@@ -39,7 +33,11 @@ adi_ip_files axi_ad9371 [list \
 
 adi_ip_properties axi_ad9371
 
+adi_ip_constraints axi_jesd_gt [list \
+  "$ad_hdl_dir/library/common/ad_axi_ip_constr.xdc" ]
+
 set_property driver_value 0 [ipx::get_ports *dovf* -of_objects [ipx::current_core]]
+set_property driver_value 0 [ipx::get_ports *dunf* -of_objects [ipx::current_core]]
 set_property driver_value 0 [ipx::get_ports *dac_sync_in* -of_objects [ipx::current_core]]
 set_property driver_value 0 [ipx::get_ports *dac_tx_ready* -of_objects [ipx::current_core]]
 set_property driver_value 0 [ipx::get_ports *adc_rx_valid* -of_objects [ipx::current_core]]
